@@ -1,0 +1,71 @@
+import { initOrderForm } from './order-form.js';
+import { initStickerLab } from './sticker-lab.js';
+
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Scroll reading progress bar + sticky header elevation
+const progressBar = document.querySelector('#readingProgress span');
+const header = document.getElementById('siteHeader');
+let ticking = false;
+
+function onScroll() {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => {
+    const doc = document.documentElement;
+    const max = doc.scrollHeight - window.innerHeight;
+    if (progressBar) {
+      const ratio = max > 0 ? Math.max(0, Math.min(1, window.scrollY / max)) : 0;
+      progressBar.style.transform = `scaleX(${ratio})`;
+    }
+    header?.classList.toggle('scrolled', window.scrollY > 18);
+    ticking = false;
+  });
+}
+
+window.addEventListener('scroll', onScroll, { passive: true });
+window.addEventListener('resize', onScroll, { passive: true });
+onScroll();
+
+// Hide floating mobile CTA while #order is visible
+const mobileCta = document.getElementById('mobileCta');
+const orderSection = document.getElementById('order');
+if (mobileCta && orderSection && 'IntersectionObserver' in window) {
+  new IntersectionObserver(
+    (entries) => {
+      mobileCta.classList.toggle('is-hidden', entries[0].isIntersecting);
+    },
+    { threshold: 0.12 },
+  ).observe(orderSection);
+}
+
+// IntersectionObserver scroll reveal
+const revealTargets = document.querySelectorAll('[data-reveal]');
+if ('IntersectionObserver' in window && !reducedMotion) {
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.08, rootMargin: '0px 0px -24px 0px' },
+  );
+
+  revealTargets.forEach((el, index) => {
+    el.style.transitionDelay = `${(index % 3) * 65}ms`;
+    io.observe(el);
+  });
+} else {
+  revealTargets.forEach((el) => el.classList.add('in-view'));
+}
+
+// Initialize Order Form & Interactive Sticker Lab
+const orderController = initOrderForm({ reducedMotion });
+initStickerLab({
+  onAttachMockup: (file, ideaSuggestion) => {
+    orderController?.attachLabMockup(file, ideaSuggestion);
+  },
+});

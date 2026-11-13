@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: sticky-club
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ORDER_MODE
+        value: mailto
+      - key: ADMIN_PASSWORD
+        generateValue: true
