@@ -1,6 +1,6 @@
 /**
- * Order form controller for Sticky Club.
- * Handles quantity & pricing sync, reference photo dropzone + Sticker Lab attachments,
+ * Order form controller for imastik.
+ * Handles quantity & pricing sync, reference photo dropzone,
  * napkin sketch canvas, microphone voice notes, and mailto / server submission modes.
  */
 
@@ -68,8 +68,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     maxFileSizeBytes: DEFAULT_MAX_FILE_BYTES,
   };
 
-  // Reference photos (and optional Sticker Lab mockup)
-  // Each item: { file: File, url: string, isLabMockup: boolean }
+  // Reference photos: { file: File, url: string }
   let picked = [];
 
   // Voice recording state
@@ -80,7 +79,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   let voiceInterval = null;
   let voiceUrl = null;
   let voiceBlob = null;
-  let voiceFilename = 'sticky-club-voice-note.webm';
+  let voiceFilename = 'imastik-voice-note.webm';
 
   // Napkin sketch state
   const sketchCtx = napkinCanvas?.getContext('2d');
@@ -100,7 +99,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
         if (submitBtnText) submitBtnText.textContent = 'SEND MY ORDER';
         if (attachmentReminder) {
           attachmentReminder.textContent =
-            'Your uploaded photos, Sticker Lab mockup, napkin sketch, and voice note will be sent directly with your order.';
+            'Your uploaded photos, napkin sketch, and voice note will be sent directly with your order.';
         }
       }
     })
@@ -179,13 +178,6 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       const item = document.createElement('div');
       item.className = 'ref-item';
 
-      if (entry.isLabMockup) {
-        const badge = document.createElement('span');
-        badge.className = 'ref-badge';
-        badge.textContent = 'MOCKUP';
-        item.appendChild(badge);
-      }
-
       const img = document.createElement('img');
       img.src = entry.url;
       img.alt = `Preview of ${entry.file.name}`;
@@ -213,8 +205,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
           ? `${picked.length} image${picked.length === 1 ? '' : 's'} ready to upload with your order.`
           : `${picked.length} image${picked.length === 1 ? '' : 's'} ready. Remember to attach ${picked.length === 1 ? 'it' : 'them'} to your email draft.${extraNotice}`;
     } else {
-      fileInfo.textContent =
-        `Add any photos, Sticker Lab mockups, or inspiration — they are optional.${extraNotice}`;
+      fileInfo.textContent = `Add any photos or inspiration — they are optional.${extraNotice}`;
     }
   }
 
@@ -227,13 +218,12 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       }
       const duplicate = picked.some(
         (x) =>
-          !x.isLabMockup &&
           x.file.name === file.name &&
           x.file.size === file.size &&
           x.file.lastModified === file.lastModified,
       );
       if (!duplicate) {
-        picked.push({ file, url: URL.createObjectURL(file), isLabMockup: false });
+        picked.push({ file, url: URL.createObjectURL(file) });
       }
     }
     const notice = skipped
@@ -262,30 +252,6 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     });
     dropZone.addEventListener('drop', (e) => {
       addPhotos(Array.from(e.dataTransfer?.files || []));
-    });
-  }
-
-  function attachLabMockup(file, ideaSuggestion = '') {
-    // Replace any earlier Sticker Lab mockup so repeated edits stay tidy
-    const prevIdx = picked.findIndex((x) => x.isLabMockup);
-    if (prevIdx >= 0) {
-      URL.revokeObjectURL(picked[prevIdx].url);
-      picked.splice(prevIdx, 1);
-    }
-    if (picked.length >= config.maxPhotos) {
-      const removed = picked.pop();
-      if (removed) URL.revokeObjectURL(removed.url);
-    }
-    picked.unshift({ file, url: URL.createObjectURL(file), isLabMockup: true });
-    refreshGallery();
-
-    if (ideaInput && !ideaInput.value.trim() && ideaSuggestion) {
-      ideaInput.value = ideaSuggestion;
-      refreshProgress();
-    }
-
-    document.getElementById('order')?.scrollIntoView({
-      behavior: reducedMotion ? 'instant' : 'smooth',
     });
   }
 
@@ -328,7 +294,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
         const blob = new Blob(voiceParts, { type: recorder.mimeType || 'audio/webm' });
         voiceBlob = blob;
         const ext = blob.type.includes('mp4') ? 'm4a' : 'webm';
-        voiceFilename = `sticky-club-voice-note.${ext}`;
+        voiceFilename = `imastik-voice-note.${ext}`;
         if (voiceUrl) URL.revokeObjectURL(voiceUrl);
         voiceUrl = URL.createObjectURL(blob);
         if (voicePreview) {
@@ -500,7 +466,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
 
   async function renderMailtoResult({ name, email, idea, sharePermission }) {
     if (!resultBox) return;
-    const subjectText = `Sticky Club sticker request — ${name}`;
+    const subjectText = `imastik sticker request — ${name}`;
     const bodyText = buildOrderSummaryText({ name, email, idea, sharePermission });
     const recipient = config.hasTeamEmail ? config.teamEmail : '';
     const mailtoHref = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(
@@ -516,7 +482,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     const copy = document.createElement('p');
     copy.textContent = config.hasTeamEmail
       ? `Click "Open Email App" below to send your request to ${config.teamEmail}. Don’t forget to attach any downloaded files!`
-      : 'Click "Open Email App" and enter the Sticky Club team email address (or set TEAM_EMAIL in Render environment variables so it fills automatically).';
+      : 'Click "Open Email App" and enter the imastik team email address (or set TEAM_EMAIL in Render environment variables so it fills automatically).';
 
     const actions = document.createElement('div');
     actions.className = 'result-actions';
@@ -545,7 +511,6 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     actions.append(mailLink, copyBtn);
     resultBox.append(heading, copy, actions);
 
-    // Quick-download helpers for attachments so users don't lose anything
     const downloads = document.createElement('div');
     downloads.className = 'result-downloads';
 
@@ -553,7 +518,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       const a = document.createElement('a');
       a.className = 'result-btn';
       a.href = napkinCanvas.toDataURL('image/png');
-      a.download = 'sticky-club-sketch.png';
+      a.download = 'imastik-sketch.png';
       a.textContent = 'Download Sketch PNG';
       downloads.appendChild(a);
     }
@@ -564,16 +529,6 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       a.href = voiceUrl;
       a.download = voiceFilename;
       a.textContent = 'Download Voice Note';
-      downloads.appendChild(a);
-    }
-
-    const labItem = picked.find((p) => p.isLabMockup);
-    if (labItem) {
-      const a = document.createElement('a');
-      a.className = 'result-btn';
-      a.href = labItem.url;
-      a.download = 'sticky-club-mockup.png';
-      a.textContent = 'Download Lab Mockup PNG';
       downloads.appendChild(a);
     }
 
@@ -599,16 +554,12 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     fd.set('sharePermission', sharePermission ? 'yes' : 'no');
 
     picked.forEach((entry) => {
-      if (entry.isLabMockup) {
-        fd.append('labMockup', entry.file, entry.file.name);
-      } else {
-        fd.append('photos', entry.file, entry.file.name);
-      }
+      fd.append('photos', entry.file, entry.file.name);
     });
 
     const sketchBlob = await getSketchBlob();
     if (sketchBlob) {
-      fd.append('sketch', sketchBlob, 'sticky-club-sketch.png');
+      fd.append('sketch', sketchBlob, 'imastik-sketch.png');
     }
 
     if (voiceBlob) {
@@ -675,8 +626,5 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     }
   });
 
-  return {
-    setQuantity,
-    attachLabMockup,
-  };
+  return { setQuantity };
 }

@@ -1,5 +1,5 @@
 /**
- * Shared pricing and quantity helpers for Sticky Club sticker orders.
+ * Shared pricing and quantity helpers for imastik sticker orders.
  * Pricing tiers:
  *   1 sticker  -> EUR 3.00
  *   2 stickers -> EUR 5.00

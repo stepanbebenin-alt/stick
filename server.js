@@ -167,7 +167,7 @@ export function createApp(options = {}) {
         if (AUDIO_MIME_EXT.has(mime)) return cb(null, true);
         return cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Unsupported audio format for voiceNote'));
       }
-      if (['photos', 'sketch', 'labMockup'].includes(file.fieldname)) {
+      if (['photos', 'sketch'].includes(file.fieldname)) {
         if (IMAGE_MIME_EXT.has(mime)) return cb(null, true);
         return cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Unsupported image format (use JPG, PNG, or WebP)'));
       }
@@ -179,7 +179,6 @@ export function createApp(options = {}) {
     { name: 'photos', maxCount: MAX_PHOTOS },
     { name: 'sketch', maxCount: 1 },
     { name: 'voiceNote', maxCount: 1 },
-    { name: 'labMockup', maxCount: 1 },
   ]);
 
   const app = express();
@@ -218,7 +217,7 @@ export function createApp(options = {}) {
   app.get('/health', (_req, res) => {
     res.json({
       ok: true,
-      service: 'sticky-club',
+      service: 'imastik',
       uptimeSeconds: Math.round(process.uptime()),
     });
   });
@@ -267,7 +266,7 @@ export function createApp(options = {}) {
 
         const orderId = req.orderId || crypto.randomUUID();
         const fileEntries = [];
-        for (const field of ['photos', 'sketch', 'voiceNote', 'labMockup']) {
+        for (const field of ['photos', 'sketch', 'voiceNote']) {
           const list = req.files?.[field] || [];
           for (const f of list) {
             fileEntries.push({
@@ -331,7 +330,7 @@ export function createApp(options = {}) {
       if (safeEqual(providedPassword, expected)) return next();
     }
 
-    res.setHeader('WWW-Authenticate', 'Basic realm="Sticky Club Orders"');
+    res.setHeader('WWW-Authenticate', 'Basic realm="imastik Orders"');
     return res.status(401).json({ ok: false, error: 'Authentication required.' });
   }
 
@@ -366,7 +365,7 @@ export function createApp(options = {}) {
   });
 
   app.use((err, _req, res, _next) => {
-    console.error('[sticky-club] unhandled error:', err);
+    console.error('[imastik] unhandled error:', err);
     res.status(500).json({ ok: false, error: 'Internal server error.' });
   });
 
@@ -380,6 +379,6 @@ if (isDirectRun) {
   const port = Number.parseInt(process.env.PORT || '3000', 10) || 3000;
   const app = createApp();
   app.listen(port, () => {
-    console.log(`Sticky Club server listening on http://localhost:${port}`);
+    console.log(`imastik server listening on http://localhost:${port}`);
   });
 }

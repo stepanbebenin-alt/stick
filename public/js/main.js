@@ -1,5 +1,4 @@
 import { initOrderForm } from './order-form.js';
-import { initStickerLab } from './sticker-lab.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -27,16 +26,43 @@ window.addEventListener('scroll', onScroll, { passive: true });
 window.addEventListener('resize', onScroll, { passive: true });
 onScroll();
 
-// Hide floating mobile CTA while #order is visible
+// Smooth-scroll in-page anchor links (consistent across browsers)
+document.querySelectorAll('a[href^="#"]').forEach((link) => {
+  link.addEventListener('click', (e) => {
+    const targetId = link.getAttribute('href');
+    if (!targetId || targetId === '#') return;
+    const target = document.querySelector(targetId);
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
+    if (history.replaceState) {
+      history.replaceState(null, '', targetId);
+    }
+  });
+});
+
+// Hide floating mobile CTA while hero (#top) or order form (#order) is visible
 const mobileCta = document.getElementById('mobileCta');
+const heroSection = document.getElementById('top');
 const orderSection = document.getElementById('order');
 if (mobileCta && orderSection && 'IntersectionObserver' in window) {
-  new IntersectionObserver(
+  let heroVisible = Boolean(heroSection);
+  let orderVisible = false;
+  const syncMobileCta = () => {
+    mobileCta.classList.toggle('is-hidden', heroVisible || orderVisible);
+  };
+  const ctaObserver = new IntersectionObserver(
     (entries) => {
-      mobileCta.classList.toggle('is-hidden', entries[0].isIntersecting);
+      for (const entry of entries) {
+        if (entry.target === heroSection) heroVisible = entry.isIntersecting;
+        if (entry.target === orderSection) orderVisible = entry.isIntersecting;
+      }
+      syncMobileCta();
     },
     { threshold: 0.12 },
-  ).observe(orderSection);
+  );
+  if (heroSection) ctaObserver.observe(heroSection);
+  ctaObserver.observe(orderSection);
 }
 
 // IntersectionObserver scroll reveal
@@ -62,10 +88,5 @@ if ('IntersectionObserver' in window && !reducedMotion) {
   revealTargets.forEach((el) => el.classList.add('in-view'));
 }
 
-// Initialize Order Form & Interactive Sticker Lab
-const orderController = initOrderForm({ reducedMotion });
-initStickerLab({
-  onAttachMockup: (file, ideaSuggestion) => {
-    orderController?.attachLabMockup(file, ideaSuggestion);
-  },
-});
+// Initialize Order Form
+initOrderForm({ reducedMotion });

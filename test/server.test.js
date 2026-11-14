@@ -13,7 +13,7 @@ const TINY_PNG = Buffer.from(
 );
 
 async function startTestServer(appOptions = {}) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'sticky-club-test-'));
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'imastik-test-'));
   const app = createApp({
     dataDir: path.join(tmpDir, 'data'),
     uploadDir: path.join(tmpDir, 'uploads'),
@@ -47,28 +47,38 @@ test('pricing formula calculates expected euro amounts and clamps bounds', () =>
   assert.equal(clampQuantity(250), 100);
 });
 
-test('GET /health and GET / serve healthy app with Sticker Lab and no placeholder email', async () => {
-  const srv = await startTestServer({ teamEmail: 'team@stickyclub.lt', orderMode: 'mailto' });
+test('GET /health and GET / serve imastik app without Playground and with 3 order CTAs', async () => {
+  const srv = await startTestServer({ teamEmail: 'team@imastik.lt', orderMode: 'mailto' });
   try {
     const healthRes = await fetch(`${srv.baseUrl}/health`);
     assert.equal(healthRes.status, 200);
     const health = await healthRes.json();
     assert.equal(health.ok, true);
+    assert.equal(health.service, 'imastik');
 
     const cfgRes = await fetch(`${srv.baseUrl}/api/config`);
     assert.equal(cfgRes.status, 200);
     const cfg = await cfgRes.json();
-    assert.equal(cfg.teamEmail, 'team@stickyclub.lt');
+    assert.equal(cfg.teamEmail, 'team@imastik.lt');
     assert.equal(cfg.hasTeamEmail, true);
     assert.equal(cfg.orderMode, 'mailto');
 
     const htmlRes = await fetch(`${srv.baseUrl}/`);
     assert.equal(htmlRes.status, 200);
     const html = await htmlRes.text();
-    assert.match(html, /id="stage"/);
-    assert.match(html, /id="photoEditor"/);
+    assert.match(html, /\/images\/imastik-logo\.png/);
+    assert.match(html, /\/images\/imastik-icon\.png/);
     assert.match(html, /id="orderForm"/);
+    assert.match(html, /id="napkinCanvas"/);
+    assert.match(html, /id="voiceToggle"/);
+    assert.doesNotMatch(html, /id="stage"/);
     assert.doesNotMatch(html, /YOUR-TEAM-EMAIL@example\.com/);
+
+    // Verify section order: process+pricing -> team -> order form
+    const pricesIdx = html.indexOf('id="prices"');
+    const storyIdx = html.indexOf('id="story"');
+    const orderIdx = html.indexOf('id="order"');
+    assert.ok(pricesIdx > 0 && storyIdx > pricesIdx && orderIdx > storyIdx);
   } finally {
     await srv.close();
   }
@@ -97,7 +107,7 @@ test('POST /api/orders validates input, saves multipart attachments, and enforce
     const badFileRes = await fetch(`${srv.baseUrl}/api/orders`, { method: 'POST', body: badFileFd });
     assert.equal(badFileRes.status, 400);
 
-    // 3. Valid order with photo, sketch, voice note, and Sticker Lab mockup
+    // 3. Valid order with photo, napkin sketch, and voice note
     const fd = new FormData();
     fd.set('name', 'Milda');
     fd.set('email', 'milda@uni.example');
@@ -106,7 +116,6 @@ test('POST /api/orders validates input, saves multipart attachments, and enforce
     fd.set('sharePermission', 'yes');
     fd.append('photos', new Blob([TINY_PNG], { type: 'image/png' }), 'cat.png');
     fd.append('sketch', new Blob([TINY_PNG], { type: 'image/png' }), 'sketch.png');
-    fd.append('labMockup', new Blob([TINY_PNG], { type: 'image/png' }), 'mockup.png');
     fd.append('voiceNote', new Blob([Buffer.from('fake-webm')], { type: 'audio/webm;codecs=opus' }), 'voice.webm');
 
     const okRes = await fetch(`${srv.baseUrl}/api/orders`, { method: 'POST', body: fd });
@@ -116,7 +125,7 @@ test('POST /api/orders validates input, saves multipart attachments, and enforce
     assert.equal(created.quantity, 4);
     assert.equal(created.estimatedPrice, 8);
     assert.equal(created.estimatedPriceFormatted, '€8.00');
-    assert.equal(created.filesCount, 4);
+    assert.equal(created.filesCount, 3);
 
     // 4. Unauthenticated GET /api/orders returns 401
     const unauthRes = await fetch(`${srv.baseUrl}/api/orders`);
@@ -131,7 +140,7 @@ test('POST /api/orders validates input, saves multipart attachments, and enforce
     const listData = await listRes.json();
     assert.equal(listData.count, 1);
     assert.equal(listData.orders[0].orderId, created.orderId);
-    assert.equal(listData.orders[0].files.length, 4);
+    assert.equal(listData.orders[0].files.length, 3);
 
     const firstFile = listData.orders[0].files[0].filename;
     const fileRes = await fetch(

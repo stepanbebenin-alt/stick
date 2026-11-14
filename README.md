@@ -1,20 +1,19 @@
-# STICKY CLUB — Render Edition
+# imastik — Render Edition
 
-Custom laptop stickers web app rebuilt as a clean Node.js/Express service ready for [Render](https://render.com), with the interactive **Sticker Lab** canvas restored right above the order form.
+Custom laptop stickers web app rebuilt as a clean Node.js/Express service ready for [Render](https://render.com).
 
-## What Was Rebuilt & Fixed
+## Features
 
 - **Render-ready Node.js Web Service** (`server.js`, `render.yaml`, `GET /health` health check, Helmet CSP, gzip compression).
-- **Interactive Sticker Lab (`#lab`)**:
-  - Drag, resize, rotate, layer, duplicate, and edit shape/text stickers.
-  - Upload or drop photos directly onto the canvas into the **Photo Cutout Studio** (Magic Wand background removal, Erase/Restore brushes, and live **white vinyl die-cut border**).
-  - Preview layouts on **Sky Board**, **Silver Laptop**, or **Matte Laptop**.
-  - Export mockup as PNG or click **Attach Mockup to Order ↓** to send it straight into the order form gallery.
-- **Fixed Pricing Sync Bug**: Clicking any tier card (`€3`, `€5`, `€6.50`) now syncs the quantity counter, estimated total, and live summary bar cleanly.
-- **Fixed Team Cards**: Uniform initial letters (`E`, `L`, `V`, `S`, `Y`, `G`) and corner stamps across all six team cards.
+- **Streamlined Page Flow**:
+  - Compact sky hero with top **Make an order** CTA
+  - **The idea** editorial intro
+  - Single unified pink **Process + Pricing** section with middle **Make an order** CTA and interactive pricing cards (`€3`, `€5`, `€6.50`)
+  - **Our team** section right after pricing with bottom **Order here** CTA
+  - **Custom Order Form** (`#order`) with reference image upload, **napkin sketch canvas**, **voice note recorder**, and **timelapse consent** checkbox
 - **Flexible Order Submission**:
   - Defaults to `ORDER_MODE=mailto` (opens a pre-filled email draft via `TEAM_EMAIL` env var + Copy Order Details + quick attachment download links).
-  - Supports `ORDER_MODE=server` to upload photos, napkin sketches, voice notes, and Sticker Lab mockups directly to `POST /api/orders` (viewable via Basic-Auth-protected `GET /api/orders`).
+  - Supports `ORDER_MODE=server` to upload photos, napkin sketches, and voice notes directly to `POST /api/orders` (viewable via Basic-Auth-protected `GET /api/orders`).
 
 ## Run Locally
 
@@ -33,7 +32,7 @@ npm test
 
 ## Deploy on Render
 
-1. Push this folder to a GitHub or GitLab repository.
+1. Push this repository to GitHub or GitLab.
 2. In the Render dashboard, choose **New → Blueprint** (or **New → Web Service**) and point to your repo — Render reads [`render.yaml`](./render.yaml) automatically.
 3. In Render **Environment** settings, set:
    - `TEAM_EMAIL` — your team's real inbox address for `mailto:` order drafts.

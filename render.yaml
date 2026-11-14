@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: sticky-club
+    name: imastik
     runtime: node
     plan: free
     buildCommand: npm ci
