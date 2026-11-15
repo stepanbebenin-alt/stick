@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { createApp } from '../server.js';
+import { buildOrderEmail, loadOrderAttachments } from '../src/mailer.js';
 import { calculateStickerPrice, clampQuantity, formatEuro } from '../src/pricing.js';
 
 // Minimal valid 1x1 PNG bytes for multipart upload tests
@@ -191,5 +192,149 @@ test('GET /api/orders returns 503 when ADMIN_PASSWORD is not set', async () => {
     assert.equal(res.status, 503);
   } finally {
     await srv.close();
+  }
+});
+
+test('ORDER_MODE=auto resolves to mailto without transport and switches to auto-email server mode with Gmail webhook', async () => {
+  const noMailSrv = await startTestServer({ orderMode: 'auto', teamEmail: 'imastik.co@gmail.com' });
+  try {
+    const cfg = await (await fetch(`${noMailSrv.baseUrl}/api/config`)).json();
+    assert.equal(cfg.orderMode, 'mailto');
+    assert.equal(cfg.autoEmailEnabled, false);
+  } finally {
+    await noMailSrv.close();
+  }
+
+  const webhookRequests = [];
+  const webhookSrv = await startTestServer({
+    orderMode: 'auto',
+    teamEmail: 'imastik.co@gmail.com',
+    gmailWebhookUrl: 'https://script.google.com/macros/s/test-deploy/exec',
+    gmailWebhookSecret: 'top-secret-hook',
+    adminPassword: 'admin-pass-for-test',
+    mailFetch: async (url, init) => {
+      webhookRequests.push({ url, body: JSON.parse(init.body) });
+      return new Response(JSON.stringify({ ok: true, messageId: 'gmail-msg-1' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+  });
+
+  try {
+    const cfg = await (await fetch(`${webhookSrv.baseUrl}/api/config`)).json();
+    assert.equal(cfg.orderMode, 'server');
+    assert.equal(cfg.autoEmailEnabled, true);
+
+    const fd = new FormData();
+    fd.set('name', 'Dovile');
+    fd.set('email', 'dovile@example.com');
+    fd.set('idea', '<script>alert(1)</script> Cute duck sticker');
+    fd.set('quantity', '20');
+    fd.set('sharePermission', 'yes');
+    fd.append('photos', new Blob([TINY_PNG], { type: 'image/png' }), 'duck.png');
+    fd.append('sketch', new Blob([TINY_PNG], { type: 'image/png' }), 'napkin.png');
+    fd.append('voiceNote', new Blob([Buffer.from('audio-bytes')], { type: 'audio/webm' }), 'voice.webm');
+
+    const res = await fetch(`${webhookSrv.baseUrl}/api/orders`, { method: 'POST', body: fd });
+    assert.equal(res.status, 201);
+    const created = await res.json();
+    assert.equal(created.emailSent, true);
+    assert.equal(created.filesCount, 3);
+    assert.equal(webhookRequests.length, 1);
+
+    const sent = webhookRequests[0].body;
+    assert.equal(webhookRequests[0].url, 'https://script.google.com/macros/s/test-deploy/exec');
+    assert.equal(sent.secret, 'top-secret-hook');
+    assert.equal(sent.to, 'imastik.co@gmail.com');
+    assert.equal(sent.replyTo, 'dovile@example.com');
+    assert.match(sent.subject, /20x \(€15\.00\) — Dovile/);
+    assert.doesNotMatch(sent.html, /<script>alert/);
+    assert.match(sent.html, /&lt;script&gt;alert/);
+    assert.equal(sent.attachments.length, 3);
+    assert.deepEqual(Buffer.from(sent.attachments[0].base64, 'base64'), TINY_PNG);
+  } finally {
+    await webhookSrv.close();
+  }
+});
+
+test('Brevo mail failure still preserves order safely on server and respects attachment byte caps', async () => {
+  const brevoCalls = [];
+  const srv = await startTestServer({
+    orderMode: 'server',
+    teamEmail: 'imastik.co@gmail.com',
+    brevoApiKey: 'xkeysib-test-only',
+    adminPassword: 'brevo-admin-password',
+    mailFetch: async (url, init) => {
+      brevoCalls.push({ url, headers: init.headers, body: JSON.parse(init.body) });
+      return new Response(JSON.stringify({ message: 'internal provider failure url=secret' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+  });
+
+  try {
+    const fd = new FormData();
+    fd.set('name', 'Tomas');
+    fd.set('email', 'tomas@example.com');
+    fd.set('idea', 'Skateboard sticker');
+    fd.set('quantity', '5');
+    fd.append('photos', new Blob([TINY_PNG], { type: 'image/png' }), 'board.png');
+
+    const res = await fetch(`${srv.baseUrl}/api/orders`, { method: 'POST', body: fd });
+    assert.equal(res.status, 201);
+    const created = await res.json();
+    assert.equal(created.ok, true);
+    assert.equal(created.emailSent, false);
+    assert.equal(created.emailError, 'Automatic email delivery was unavailable.');
+
+    assert.equal(brevoCalls.length, 1);
+    assert.equal(brevoCalls[0].url, 'https://api.brevo.com/v3/smtp/email');
+    assert.equal(brevoCalls[0].headers['api-key'], 'xkeysib-test-only');
+    assert.equal(brevoCalls[0].body.attachment.length, 1);
+
+    const authHeader = `Basic ${Buffer.from('admin:brevo-admin-password').toString('base64')}`;
+    const saved = await (await fetch(`${srv.baseUrl}/api/orders`, { headers: { Authorization: authHeader } })).json();
+    assert.equal(saved.orders[0].emailDelivery.sent, false);
+    assert.equal(saved.orders[0].emailDelivery.provider, 'brevo');
+  } finally {
+    await srv.close();
+  }
+
+  // Verify loadOrderAttachments omits oversized files cleanly and buildOrderEmail notes omission
+  const tmpAttachDir = await fs.mkdtemp(path.join(os.tmpdir(), 'imastik-attach-'));
+  try {
+    await fs.writeFile(path.join(tmpAttachDir, 'small.png'), TINY_PNG);
+    await fs.writeFile(path.join(tmpAttachDir, 'big.png'), Buffer.alloc(128, 7));
+    const { attached, omitted } = await loadOrderAttachments(
+      [
+        { field: 'photos', filename: 'small.png', originalName: 'small.png', mimeType: 'image/png' },
+        { field: 'photos', filename: 'big.png', originalName: 'big.png', mimeType: 'image/png' },
+      ],
+      tmpAttachDir,
+      80,
+    );
+    assert.equal(attached.length, 1);
+    assert.equal(omitted.length, 1);
+    assert.equal(omitted[0].name, 'big.png');
+
+    const email = buildOrderEmail(
+      {
+        orderId: 'test-id',
+        createdAt: '2026-11-15T12:00:00Z',
+        name: 'Test',
+        email: 't@example.com',
+        quantity: 5,
+        estimatedPriceFormatted: '€5.00',
+        idea: 'Sticker',
+        sharePermission: false,
+        storePermission: false,
+      },
+      { attached, omitted },
+    );
+    assert.match(email.text, /big\.png \(omitted: exceeds_18mb_email_limit\)/);
+  } finally {
+    await fs.rm(tmpAttachDir, { recursive: true, force: true });
   }
 });

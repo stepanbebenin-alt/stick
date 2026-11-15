@@ -12,9 +12,9 @@ Custom stickers web app rebuilt as a clean Node.js/Express service ready for [Re
   - **Interactive Sticker Playground** (`#play`) with draggable stickers, photo cutout studio (quick color cutout, erase/restore brushes, optional AI background removal, white sticker border), PNG download, and 1-click **Use canvas in order**
   - **Our team** (`#story`) featuring all six club members, `@linas.psd`, and `@imastik.co` Instagram links
   - **Fixed Order System** (`#order`) with reference image upload, **napkin sketch canvas** (with pencil cursor + expandable full-screen drawing pad), **voice note recorder**, clear pack/payment instructions (`imastik.co@gmail.com`), and **timelapse consent**
-- **Flexible Order Submission**:
-  - Defaults to `ORDER_MODE=mailto` (opens a pre-filled email draft via `TEAM_EMAIL` env var + Copy Order Details + quick attachment download links).
-  - Supports `ORDER_MODE=server` to upload photos, napkin sketches, and voice notes directly to `POST /api/orders` (viewable via Basic-Auth-protected `GET /api/orders`).
+- **Flexible Order Submission & Auto-Email Delivery**:
+  - Uses `ORDER_MODE=auto`: switches automatically to 1-click direct submission (`POST /api/orders` -> automatic email with photo, sketch & voice attachments to `TEAM_EMAIL`) whenever `GMAIL_WEBHOOK_URL`, `BREVO_API_KEY`, or `RESEND_API_KEY` is configured, and safely falls back to `mailto` drafts if no email provider is set yet.
+  - Because Render Free blocks outbound SMTP ports (`25`, `465`, `587`), automatic delivery sends over **HTTPS (port 443)** via a ready-to-deploy [`scripts/google-apps-script.gs`](./scripts/google-apps-script.gs) webhook or Brevo / Resend HTTP APIs.
 
 ## Run Locally
 
@@ -36,6 +36,9 @@ npm test
 1. Push this repository to GitHub or GitLab.
 2. In the Render dashboard, choose **New → Blueprint** (or **New → Web Service**) and point to your repo — Render reads [`render.yaml`](./render.yaml) automatically.
 3. In Render **Environment** settings, set:
-   - `TEAM_EMAIL` — your team's real inbox address for `mailto:` order drafts.
-   - `ORDER_MODE` — keep `mailto` for client-side email drafts, or switch to `server` for direct `POST /api/orders` uploads (note: Render's free tier uses an ephemeral filesystem; attach a persistent disk on a paid plan or connect object storage if storing uploads long term).
+   - `TEAM_EMAIL` — your team's inbox address (`imastik.co@gmail.com`).
+   - `ORDER_MODE` — `auto` (recommended: auto-emails orders directly once an email transport is added; safely uses `mailto` beforehand), `server`, or `mailto`.
+   - **Automatic Email Delivery (choose one HTTPS transport):**
+     - **Option A — Google Apps Script inside `imastik.co@gmail.com` (recommended, free, no domain needed):** Deploy [`scripts/google-apps-script.gs`](./scripts/google-apps-script.gs) at [script.google.com](https://script.google.com) as a Web App (`Execute as: Me`, `Who has access: Anyone`) and set `GMAIL_WEBHOOK_URL` (and optional `GMAIL_WEBHOOK_SECRET`).
+     - **Option B — Brevo or Resend API:** Set `BREVO_API_KEY` or `RESEND_API_KEY` (plus `SENDER_EMAIL` if using a custom domain).
    - `ADMIN_PASSWORD` — generated automatically by `render.yaml` to protect `GET /api/orders`.

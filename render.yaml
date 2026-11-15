@@ -10,7 +10,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: ORDER_MODE
-        value: mailto
+        value: auto
       - key: TEAM_EMAIL
         value: imastik.co@gmail.com
       - key: ADMIN_PASSWORD

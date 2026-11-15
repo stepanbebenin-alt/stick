@@ -7,6 +7,7 @@ import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
 import multer from 'multer';
+import { createOrderMailer } from './src/mailer.js';
 import { calculateStickerPrice, clampQuantity, formatEuro } from './src/pricing.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -57,8 +58,11 @@ function normalizeMime(mimetype) {
   return String(mimetype || '').split(';')[0].trim().toLowerCase();
 }
 
-function normalizeOrderMode(mode) {
-  return String(mode || '').trim().toLowerCase() === 'server' ? 'server' : 'mailto';
+function normalizeOrderMode(mode, emailConfigured = false) {
+  const normalized = String(mode || '').trim().toLowerCase();
+  if (normalized === 'server') return 'server';
+  if (normalized === 'mailto') return 'mailto';
+  return emailConfigured ? 'server' : 'mailto';
 }
 
 function sanitizeBaseName(originalName, fallback) {
@@ -92,7 +96,20 @@ export function createApp(options = {}) {
 
   const getTeamEmail = () =>
     String(options.teamEmail ?? (process.env.TEAM_EMAIL || 'imastik.co@gmail.com')).trim();
-  const getOrderMode = () => normalizeOrderMode(options.orderMode ?? process.env.ORDER_MODE);
+  const mailer =
+    options.mailer ||
+    createOrderMailer({
+      teamEmail: options.teamEmail,
+      senderEmail: options.senderEmail,
+      senderName: options.senderName,
+      gmailWebhookUrl: options.gmailWebhookUrl,
+      gmailWebhookSecret: options.gmailWebhookSecret,
+      brevoApiKey: options.brevoApiKey,
+      resendApiKey: options.resendApiKey,
+      fetchImpl: options.mailFetch,
+    });
+  const getOrderMode = (emailConfigured = mailer.getStatus().configured) =>
+    normalizeOrderMode(options.orderMode ?? process.env.ORDER_MODE, emailConfigured);
   const getAdminPassword = () => String(options.adminPassword ?? process.env.ADMIN_PASSWORD ?? '').trim();
 
   fs.mkdirSync(dataDir, { recursive: true });
@@ -231,10 +248,12 @@ export function createApp(options = {}) {
 
   app.get('/api/config', (_req, res) => {
     const teamEmail = getTeamEmail();
+    const mailStatus = mailer.getStatus();
     res.json({
       teamEmail,
       hasTeamEmail: isValidEmail(teamEmail),
-      orderMode: getOrderMode(),
+      orderMode: getOrderMode(mailStatus.configured),
+      autoEmailEnabled: mailStatus.configured,
       maxPhotos: MAX_PHOTOS,
       maxFileSizeBytes: MAX_FILE_SIZE_BYTES,
     });
@@ -306,6 +325,18 @@ export function createApp(options = {}) {
           files: fileEntries,
         };
 
+        const emailResult = await mailer.sendOrderEmail(record, req.orderUploadDir);
+        if (emailResult.error) {
+          console.error('[imastik] automatic order email failed:', emailResult.provider, emailResult.error);
+        }
+        record.emailDelivery = {
+          sent: Boolean(emailResult.sent),
+          provider: emailResult.provider || null,
+          messageId: emailResult.messageId || null,
+          error: emailResult.error || null,
+          omittedAttachments: emailResult.omittedAttachments || [],
+        };
+
         await appendOrderRecord(record);
 
         return res.status(201).json({
@@ -316,6 +347,9 @@ export function createApp(options = {}) {
           estimatedPrice,
           estimatedPriceFormatted: record.estimatedPriceFormatted,
           filesCount: fileEntries.length,
+          emailSent: record.emailDelivery.sent,
+          emailError: record.emailDelivery.error ? 'Automatic email delivery was unavailable.' : null,
+          omittedAttachments: record.emailDelivery.omittedAttachments,
         });
       } catch (innerErr) {
         await cleanupOrderDir(req.orderUploadDir);

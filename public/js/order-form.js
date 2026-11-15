@@ -73,6 +73,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   const submitBtn = document.getElementById('submitBtn');
   const submitBtnText = document.getElementById('submitBtnText');
   const attachmentReminder = document.getElementById('attachmentReminder');
+  const paymentSteps = document.getElementById('paymentSteps');
   const storePickBanner = document.getElementById('storePickBanner');
   const storePickTitle = document.getElementById('storePickTitle');
   const storePickClear = document.getElementById('storePickClear');
@@ -87,6 +88,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     teamEmail: '',
     hasTeamEmail: false,
     orderMode: 'mailto',
+    autoEmailEnabled: false,
     maxPhotos: DEFAULT_MAX_PHOTOS,
     maxFileSizeBytes: DEFAULT_MAX_FILE_BYTES,
   };
@@ -108,6 +110,21 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   let sketchColor = '#294b38';
   let hasSketch = false;
 
+  function renderDirectPaymentSteps(inboxEmail) {
+    if (!paymentSteps) return;
+    paymentSteps.replaceChildren();
+    const lead = document.createElement('strong');
+    lead.textContent = 'How paying works:';
+    const inbox = document.createElement('strong');
+    inbox.textContent = inboxEmail || 'imastik.co@gmail.com';
+    paymentSteps.append(
+      lead,
+      ' Submitting your idea is free — no card needed here. When you hit Send, your idea, photos, sketch, and voice note go straight to ',
+      inbox,
+      ', and we’ll reply with your design preview plus payment options (Revolut, bank transfer, or cash) before printing.',
+    );
+  }
+
   // --- Config fetch ---
   fetch('/api/config')
     .then((r) => (r.ok ? r.json() : null))
@@ -123,6 +140,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
           attachmentReminder.textContent =
             'Your uploaded photos, napkin sketch, and voice note will be sent directly with your order.';
         }
+        renderDirectPaymentSteps(config.teamEmail);
       }
     })
     .catch(() => {
@@ -564,7 +582,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     return lines.join('\n');
   }
 
-  async function renderMailtoResult({ name, email, idea, sharePermission, storePermission }) {
+  function appendMailtoBackupControls({ name, email, idea, sharePermission, storePermission, autoLaunch = false }) {
     if (!resultBox) return;
     const subjectText = `imastik sticker request — ${name}`;
     const bodyText = buildOrderSummaryText({ name, email, idea, sharePermission, storePermission });
@@ -572,17 +590,6 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     const mailtoHref = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(
       subjectText,
     )}&body=${encodeURIComponent(bodyText)}`;
-
-    resultBox.replaceChildren();
-    resultBox.classList.remove('hidden');
-
-    const heading = document.createElement('h4');
-    heading.textContent = 'Your sticker request draft is ready!';
-
-    const copy = document.createElement('p');
-    copy.textContent = config.hasTeamEmail
-      ? `Next step: send the pre-filled email to ${config.teamEmail} (attach your sketch/voice note if saved). We'll reply with a design preview and Revolut / bank transfer / cash payment details before printing.`
-      : 'Next step: click "Open Email App", enter the imastik team email address, and hit send (don\'t forget any downloaded sketch or voice note). We\'ll reply with your design preview and payment options (Revolut, bank transfer, or cash) before printing.';
 
     const actions = document.createElement('div');
     actions.className = 'result-actions';
@@ -609,7 +616,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     });
 
     actions.append(mailLink, copyBtn);
-    resultBox.append(heading, copy, actions);
+    resultBox.append(actions);
 
     const downloads = document.createElement('div');
     downloads.className = 'result-downloads';
@@ -638,11 +645,27 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       resultBox.append(attachHint, downloads);
     }
 
-    resultBox.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'nearest' });
-
-    if (config.hasTeamEmail) {
+    if (autoLaunch && config.hasTeamEmail) {
       window.location.href = mailtoHref;
     }
+  }
+
+  async function renderMailtoResult({ name, email, idea, sharePermission, storePermission }) {
+    if (!resultBox) return;
+    resultBox.replaceChildren();
+    resultBox.classList.remove('hidden');
+
+    const heading = document.createElement('h4');
+    heading.textContent = 'Your sticker request draft is ready!';
+
+    const copy = document.createElement('p');
+    copy.textContent = config.hasTeamEmail
+      ? `Next step: send the pre-filled email to ${config.teamEmail} (attach your sketch/voice note if saved). We'll reply with a design preview and Revolut / bank transfer / cash payment details before printing.`
+      : 'Next step: click "Open Email App", enter the imastik team email address, and hit send (don\'t forget any downloaded sketch or voice note). We\'ll reply with your design preview and payment options (Revolut, bank transfer, or cash) before printing.';
+
+    resultBox.append(heading, copy);
+    appendMailtoBackupControls({ name, email, idea, sharePermission, storePermission, autoLaunch: true });
+    resultBox.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'nearest' });
   }
 
   async function submitToServer({ name, email, idea, sharePermission, storePermission }) {
@@ -677,20 +700,35 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     }
 
     if (resultBox) {
+      const targetInbox = config.teamEmail || 'imastik.co@gmail.com';
       resultBox.replaceChildren();
       resultBox.classList.remove('hidden');
 
       const heading = document.createElement('h4');
-      heading.textContent = 'Order received!';
+      heading.textContent = data.emailSent ? `Order sent to ${targetInbox}!` : 'Order saved — finish sending by email';
 
       const details = document.createElement('p');
-      details.textContent = `Reference ID: ${data.orderId} · ${data.quantity} sticker${
+      const summaryLine = `Reference ID: ${data.orderId} · ${data.quantity} sticker${
         data.quantity === 1 ? '' : 's'
       } (${data.estimatedPriceFormatted}) · ${data.filesCount} attachment${
         data.filesCount === 1 ? '' : 's'
-      } uploaded.`;
+      }.`;
+      details.textContent = data.emailSent
+        ? `${summaryLine} We emailed your idea and files directly to ${targetInbox} and will reply to ${email} with your design preview before printing.`
+        : `${summaryLine} Automatic email delivery is not active yet — click "Open Email App" below so your request reaches ${targetInbox} right away.`;
 
       resultBox.append(heading, details);
+
+      if (Array.isArray(data.omittedAttachments) && data.omittedAttachments.length > 0) {
+        const omitNote = document.createElement('p');
+        omitNote.textContent = `Note: ${data.omittedAttachments.join(', ')} exceeded the 18 MB email size cap and was saved on the server without email attachment.`;
+        resultBox.append(omitNote);
+      }
+
+      if (!data.emailSent) {
+        appendMailtoBackupControls({ name, email, idea, sharePermission, storePermission, autoLaunch: false });
+      }
+
       resultBox.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'nearest' });
     }
   }
@@ -717,7 +755,11 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       return;
     }
 
+    const previousBtnLabel = submitBtnText?.textContent || '';
     if (submitBtn) submitBtn.disabled = true;
+    if (config.orderMode === 'server' && submitBtnText) {
+      submitBtnText.textContent = 'SENDING ORDER...';
+    }
     try {
       if (config.orderMode === 'server') {
         await submitToServer({ name, email, idea, sharePermission, storePermission });
@@ -728,6 +770,9 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       showError(err?.message || 'Something went wrong while preparing your order.');
     } finally {
       if (submitBtn) submitBtn.disabled = false;
+      if (submitBtnText && previousBtnLabel) {
+        submitBtnText.textContent = previousBtnLabel;
+      }
     }
   });
 
