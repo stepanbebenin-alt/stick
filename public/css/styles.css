@@ -202,10 +202,10 @@ header nav a:hover {
 }
 
 .hero h1 {
-  font: 900 clamp(40px, 6.8vw, 96px) / 0.94 'Archivo Black', Arial, sans-serif;
+  font: 900 clamp(38px, 6.4vw, 90px) / 0.94 'Archivo Black', Arial, sans-serif;
   letter-spacing: -0.06em;
   margin: 18px 0 18px;
-  max-width: 820px;
+  max-width: 960px;
   filter: drop-shadow(3px 4px 0 #fff8e0);
   text-wrap: balance;
 }
@@ -1317,6 +1317,11 @@ header nav a:hover {
 .qty-label {
   font: 700 13px 'DM Sans', sans-serif;
   color: #2c4434;
+}
+
+.qty-sublabel {
+  font-size: 12px;
+  color: #5c6e60;
 }
 
 .pack-pills {

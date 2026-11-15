@@ -130,7 +130,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     if (qtyNum) qtyNum.textContent = String(qty);
     if (totalEl) totalEl.textContent = totalFormatted;
     if (summaryLabel) {
-      summaryLabel.textContent = `Your custom stickers · ${qty} pieces`;
+      summaryLabel.textContent = `1 custom sticker design · ${qty} copies`;
     }
     if (summaryPrice) summaryPrice.textContent = totalFormatted;
 
@@ -527,7 +527,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     const lines = [
       `Name: ${name}`,
       `Email: ${email}`,
-      `Sticker pack: ${qty} stickers`,
+      `Sticker pack: ${qty} copies (1 custom sticker design)`,
       `Estimated total: ${price} (paid via Revolut, bank transfer, or cash after design preview approval)`,
       '',
       `Idea: ${idea || '(See attached photos / sketch / voice note)'}`,
