@@ -1,4 +1,5 @@
-import { initOrderForm } from './order-form.js?v=4';
+import { initOrderForm } from './order-form.js?v=5';
+import { initStore } from './store.js?v=5';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -88,5 +89,9 @@ if ('IntersectionObserver' in window && !reducedMotion) {
   revealTargets.forEach((el) => el.classList.add('in-view'));
 }
 
-// Initialize Order Form
-initOrderForm({ reducedMotion });
+// Initialize Order Form & Public Sticker Store
+const orderApi = initOrderForm({ reducedMotion });
+initStore({
+  reducedMotion,
+  onSelectDesign: (design, qty) => orderApi?.selectStoreDesign?.(design, qty),
+});

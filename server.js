@@ -256,6 +256,11 @@ export function createApp(options = {}) {
         const email = String(req.body?.email ?? '').trim();
         const idea = String(req.body?.idea ?? '').trim().slice(0, 4000);
         const sharePermission = String(req.body?.sharePermission ?? '') === 'yes';
+        const storePermission = String(req.body?.storePermission ?? '') === 'yes';
+        const storeDesignId = String(req.body?.storeDesignId ?? '')
+          .trim()
+          .replace(/[^a-z0-9-]/gi, '')
+          .slice(0, 64);
         const quantity = clampQuantity(req.body?.quantity);
         const estimatedPrice = calculateStickerPrice(quantity);
 
@@ -294,6 +299,8 @@ export function createApp(options = {}) {
           estimatedPrice,
           estimatedPriceFormatted: formatEuro(estimatedPrice),
           sharePermission,
+          storePermission,
+          storeDesignId: storeDesignId || null,
           files: fileEntries,
         };
 

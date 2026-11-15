@@ -73,12 +73,16 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   const submitBtn = document.getElementById('submitBtn');
   const submitBtnText = document.getElementById('submitBtnText');
   const attachmentReminder = document.getElementById('attachmentReminder');
+  const storePickBanner = document.getElementById('storePickBanner');
+  const storePickTitle = document.getElementById('storePickTitle');
+  const storePickClear = document.getElementById('storePickClear');
   const errorBox = document.getElementById('formError');
   const resultBox = document.getElementById('orderResult');
 
   if (!form) return null;
 
   let qty = MIN_QUANTITY;
+  let selectedStoreDesign = null;
   let config = {
     teamEmail: '',
     hasTeamEmail: false,
@@ -130,7 +134,9 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     if (qtyNum) qtyNum.textContent = String(qty);
     if (totalEl) totalEl.textContent = totalFormatted;
     if (summaryLabel) {
-      summaryLabel.textContent = `1 custom sticker design · ${qty} copies`;
+      summaryLabel.textContent = selectedStoreDesign
+        ? `1 Store design (${selectedStoreDesign.title}) · ${qty} copies`
+        : `1 custom sticker design · ${qty} copies`;
     }
     if (summaryPrice) summaryPrice.textContent = totalFormatted;
 
@@ -147,6 +153,10 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       const packQty = Number.parseInt(pill.dataset.pack || '5', 10);
       pill.classList.toggle('is-active', qty === packQty);
     });
+
+    if (selectedStoreDesign && storePickTitle) {
+      storePickTitle.textContent = `${selectedStoreDesign.title} (${qty} copies · ${totalFormatted})`;
+    }
   }
 
   minusBtn?.addEventListener('click', () => setQuantity(qty - QUANTITY_STEP));
@@ -522,18 +532,22 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     }
   }
 
-  function buildOrderSummaryText({ name, email, idea, sharePermission }) {
+  function buildOrderSummaryText({ name, email, idea, sharePermission, storePermission }) {
     const price = formatEuro(calculateStickerPrice(qty));
     const lines = [
       `Name: ${name}`,
       `Email: ${email}`,
-      `Sticker pack: ${qty} copies (1 custom sticker design)`,
+      `Sticker pack: ${qty} copies (1 ${selectedStoreDesign ? 'Store archive' : 'custom sticker'} design)`,
       `Estimated total: ${price} (paid via Revolut, bank transfer, or cash after design preview approval)`,
+      ...(selectedStoreDesign ? [`Selected Store design: ${selectedStoreDesign.title} (#${selectedStoreDesign.id})`] : []),
       '',
       `Idea: ${idea || '(See attached photos / sketch / voice note)'}`,
       '',
       `Timelapse contact: ${
         sharePermission ? 'Yes — you may contact me; separate approval required before sharing.' : 'No'
+      }`,
+      `Public Store permission: ${
+        storePermission ? 'Yes — may list my finished design in the imastik Store after confirmation.' : 'No'
       }`,
     ];
     const attachments = [];
@@ -546,10 +560,10 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     return lines.join('\n');
   }
 
-  async function renderMailtoResult({ name, email, idea, sharePermission }) {
+  async function renderMailtoResult({ name, email, idea, sharePermission, storePermission }) {
     if (!resultBox) return;
     const subjectText = `imastik sticker request — ${name}`;
-    const bodyText = buildOrderSummaryText({ name, email, idea, sharePermission });
+    const bodyText = buildOrderSummaryText({ name, email, idea, sharePermission, storePermission });
     const recipient = config.hasTeamEmail ? config.teamEmail : '';
     const mailtoHref = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(
       subjectText,
@@ -627,13 +641,17 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     }
   }
 
-  async function submitToServer({ name, email, idea, sharePermission }) {
+  async function submitToServer({ name, email, idea, sharePermission, storePermission }) {
     const fd = new FormData();
     fd.set('name', name);
     fd.set('email', email);
     fd.set('idea', idea);
     fd.set('quantity', String(qty));
     fd.set('sharePermission', sharePermission ? 'yes' : 'no');
+    fd.set('storePermission', storePermission ? 'yes' : 'no');
+    if (selectedStoreDesign?.id) {
+      fd.set('storeDesignId', selectedStoreDesign.id);
+    }
 
     picked.forEach((entry) => {
       fd.append('photos', entry.file, entry.file.name);
@@ -681,6 +699,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     const email = String(emailInput?.value || '').trim();
     const idea = String(ideaInput?.value || '').trim();
     const sharePermission = Boolean(form.querySelector('[name="share_permission"]')?.checked);
+    const storePermission = Boolean(form.querySelector('[name="store_permission"]')?.checked);
 
     if (!name) {
       showError('Please enter your name.');
@@ -697,9 +716,9 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     if (submitBtn) submitBtn.disabled = true;
     try {
       if (config.orderMode === 'server') {
-        await submitToServer({ name, email, idea, sharePermission });
+        await submitToServer({ name, email, idea, sharePermission, storePermission });
       } else {
-        await renderMailtoResult({ name, email, idea, sharePermission });
+        await renderMailtoResult({ name, email, idea, sharePermission, storePermission });
       }
     } catch (err) {
       showError(err?.message || 'Something went wrong while preparing your order.');
@@ -708,5 +727,39 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     }
   });
 
-  return { setQuantity };
+  function stripStorePickLine(rawText) {
+    return String(rawText || '').replace(/^Store design pick: [^\n]+\n*/i, '');
+  }
+
+  function clearStoreSelection() {
+    selectedStoreDesign = null;
+    storePickBanner?.classList.add('hidden');
+    if (ideaInput) {
+      ideaInput.value = stripStorePickLine(ideaInput.value);
+    }
+    setQuantity(qty);
+    refreshProgress();
+  }
+
+  function selectStoreDesign(design, preferredQty = MIN_QUANTITY) {
+    if (!design?.id || !design?.title) return;
+    selectedStoreDesign = { id: design.id, title: design.title };
+    storePickBanner?.classList.remove('hidden');
+    setQuantity(preferredQty);
+    if (ideaInput) {
+      const rest = stripStorePickLine(ideaInput.value).trimStart();
+      const prefix = `Store design pick: ${design.title} (#${design.id})`;
+      ideaInput.value = rest ? `${prefix}\n${rest}` : prefix;
+    }
+    refreshProgress();
+    document.getElementById('order')?.scrollIntoView({
+      behavior: reducedMotion ? 'instant' : 'smooth',
+    });
+    const focusTarget = nameInput?.value.trim() ? ideaInput : nameInput;
+    focusTarget?.focus({ preventScroll: true });
+  }
+
+  storePickClear?.addEventListener('click', clearStoreSelection);
+
+  return { setQuantity, selectStoreDesign };
 }

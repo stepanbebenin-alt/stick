@@ -71,6 +71,10 @@ test('GET /health and GET / serve imastik app without Playground and with 3 orde
     assert.match(html, /\/images\/imastik-logo\.png/);
     assert.match(html, /\/images\/imastik-icon\.png/);
     assert.match(html, /id="orderForm"/);
+    assert.match(html, /id="store"/);
+    assert.match(html, /id="storeGrid"/);
+    assert.match(html, /id="storePickBanner"/);
+    assert.match(html, /name="store_permission"/);
     assert.match(html, /id="napkinCanvas"/);
     assert.match(html, /id="sketchExpand"/);
     assert.match(html, /id="napkinCanvasFull"/);
@@ -78,11 +82,12 @@ test('GET /health and GET / serve imastik app without Playground and with 3 orde
     assert.doesNotMatch(html, /id="stage"/);
     assert.doesNotMatch(html, /YOUR-TEAM-EMAIL@example\.com/);
 
-    // Verify section order: process+pricing -> team -> order form
+    // Verify section order: idea -> store -> process+pricing -> team -> order form
+    const storeIdx = html.indexOf('id="store"');
     const pricesIdx = html.indexOf('id="prices"');
     const storyIdx = html.indexOf('id="story"');
     const orderIdx = html.indexOf('id="order"');
-    assert.ok(pricesIdx > 0 && storyIdx > pricesIdx && orderIdx > storyIdx);
+    assert.ok(storeIdx > 0 && pricesIdx > storeIdx && storyIdx > pricesIdx && orderIdx > storyIdx);
   } finally {
     await srv.close();
   }
@@ -118,6 +123,8 @@ test('POST /api/orders validates input, saves multipart attachments, and enforce
     fd.set('idea', 'Cat wearing sunglasses');
     fd.set('quantity', '10');
     fd.set('sharePermission', 'yes');
+    fd.set('storePermission', 'yes');
+    fd.set('storeDesignId', 'coffee-powered');
     fd.append('photos', new Blob([TINY_PNG], { type: 'image/png' }), 'cat.png');
     fd.append('sketch', new Blob([TINY_PNG], { type: 'image/png' }), 'sketch.png');
     fd.append('voiceNote', new Blob([Buffer.from('fake-webm')], { type: 'audio/webm;codecs=opus' }), 'voice.webm');
@@ -144,6 +151,8 @@ test('POST /api/orders validates input, saves multipart attachments, and enforce
     const listData = await listRes.json();
     assert.equal(listData.count, 1);
     assert.equal(listData.orders[0].orderId, created.orderId);
+    assert.equal(listData.orders[0].storePermission, true);
+    assert.equal(listData.orders[0].storeDesignId, 'coffee-powered');
     assert.equal(listData.orders[0].files.length, 3);
 
     const firstFile = listData.orders[0].files[0].filename;

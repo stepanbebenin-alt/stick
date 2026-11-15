@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700;800&family=Playfair+Display:ital,wght@1,700&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="/css/styles.css?v=4" />
+  <link rel="stylesheet" href="/css/styles.css?v=5" />
 </head>
 <body>
   <header id="siteHeader">
@@ -25,6 +25,7 @@
     </a>
     <nav aria-label="Primary navigation">
       <a href="#idea">The idea</a>
+      <a href="#store">Store</a>
       <a href="#how">How it works</a>
       <a href="#prices">Prices</a>
       <a href="#story">Our team</a>
@@ -80,6 +81,34 @@
           imastik is a creative studio turning photos, memories, inside jokes and wild ideas into custom stickers that
           feel personal. You bring the idea — even a rough sketch or just a description. Our in-house designer will
           personally create your sticker for you. No design skills required.
+        </p>
+      </div>
+    </section>
+
+    <section class="store-section" id="store">
+      <div class="store-inner">
+        <div class="store-head">
+          <div>
+            <span class="eyebrow">STICKER ARCHIVE / PUBLIC STORE</span>
+            <h2>ORDER PAST<br /><em>studio drops.</em></h2>
+          </div>
+          <p class="store-lead">
+            Don’t want to start from scratch? Pick any design from the imastik archive in packs of 5 (€5), 10 (€8), or
+            20 (€15) — or opt in below to add your custom sticker here too.
+          </p>
+        </div>
+
+        <div class="store-filters" role="group" aria-label="Filter sticker store categories">
+          <button type="button" class="store-filter is-active" data-filter="all">All drops</button>
+          <button type="button" class="store-filter" data-filter="cute">Cute &amp; Weird</button>
+          <button type="button" class="store-filter" data-filter="coffee">Coffee &amp; Study</button>
+          <button type="button" class="store-filter" data-filter="memes">Memes &amp; Mood</button>
+        </div>
+
+        <div class="store-grid" id="storeGrid"></div>
+
+        <p class="store-footnote">
+          Starter club showcase shown above — when custom orders opt into the Store, new designs join this archive for anyone to order.
         </p>
       </div>
     </section>
@@ -382,6 +411,14 @@
             <span id="studioProgressText">0 / 3</span>
           </div>
 
+          <div class="store-pick-banner hidden" id="storePickBanner" role="status">
+            <div class="store-pick-copy">
+              <span class="store-pick-kicker">STORE ARCHIVE PICK</span>
+              <strong id="storePickTitle">Selected design</strong>
+            </div>
+            <button type="button" class="store-pick-clear" id="storePickClear">Clear ×</button>
+          </div>
+
           <label class="order-field order-field-1">
             Your name
             <input name="name" placeholder="Your name" required maxlength="120" autocomplete="name" />
@@ -491,6 +528,14 @@
                 separate approval before sharing my voice, sketch, or design publicly.
               </span>
             </label>
+
+            <label class="timelapse-consent store-consent">
+              <input name="store_permission" type="checkbox" value="yes" />
+              <span>
+                You may list my finished custom design in the public imastik Store so anyone can order copies (we'll
+                ask before publishing).
+              </span>
+            </label>
           </div>
 
           <div class="qty-row">
@@ -579,6 +624,6 @@
     </svg>
   </a>
 
-  <script type="module" src="/js/main.js?v=4"></script>
+  <script type="module" src="/js/main.js?v=5"></script>
 </body>
 </html>
