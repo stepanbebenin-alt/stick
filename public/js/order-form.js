@@ -7,11 +7,21 @@
 const VALID_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const DEFAULT_MAX_PHOTOS = 8;
 const DEFAULT_MAX_FILE_BYTES = 15 * 1024 * 1024;
+const MIN_QUANTITY = 5;
+const MAX_QUANTITY = 200;
+const QUANTITY_STEP = 5;
+
+function roundCents(amount) {
+  return Math.round(amount * 100) / 100;
+}
 
 export function calculateStickerPrice(quantity) {
-  const n = Math.max(1, Math.min(100, Number.parseInt(quantity, 10) || 1));
-  if (n === 1) return 3;
-  return 5 + (n - 2) * 1.5;
+  const parsed = Number.parseInt(quantity, 10);
+  const n = Math.max(MIN_QUANTITY, Math.min(MAX_QUANTITY, Number.isNaN(parsed) ? MIN_QUANTITY : parsed));
+  if (n <= 5) return 5;
+  if (n <= 10) return roundCents(5 + (n - 5) * 0.6);
+  if (n <= 20) return roundCents(8 + (n - 10) * 0.7);
+  return roundCents(15 + (n - 20) * 0.75);
 }
 
 function formatEuro(amount) {
@@ -27,6 +37,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   const summaryLabel = document.getElementById('studioSummaryLabel');
   const summaryPrice = document.getElementById('studioSummaryPrice');
   const priceCards = document.querySelectorAll('.pricecard[data-quantity]');
+  const packPills = document.querySelectorAll('.pack-pill[data-pack]');
 
   const progressBar = document.getElementById('studioProgressBar');
   const progressText = document.getElementById('studioProgressText');
@@ -46,10 +57,18 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   const voiceHelp = document.getElementById('voiceHelp');
 
   const napkinCanvas = document.getElementById('napkinCanvas');
+  const sketchExpandBtn = document.getElementById('sketchExpand');
   const sketchUndoBtn = document.getElementById('sketchUndo');
   const sketchClearBtn = document.getElementById('sketchClear');
   const sketchSaveLink = document.getElementById('sketchSave');
   const penButtons = document.querySelectorAll('.pen-dot[data-pen]');
+
+  const sketchModal = document.getElementById('sketchModal');
+  const napkinCanvasFull = document.getElementById('napkinCanvasFull');
+  const sketchModalUndoBtn = document.getElementById('sketchModalUndo');
+  const sketchModalClearBtn = document.getElementById('sketchModalClear');
+  const sketchModalDoneBtn = document.getElementById('sketchModalDone');
+  const penButtonsModal = document.querySelectorAll('.pen-dot-modal[data-pen]');
 
   const submitBtn = document.getElementById('submitBtn');
   const submitBtnText = document.getElementById('submitBtnText');
@@ -59,7 +78,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
 
   if (!form) return null;
 
-  let qty = 1;
+  let qty = MIN_QUANTITY;
   let config = {
     teamEmail: '',
     hasTeamEmail: false,
@@ -82,10 +101,6 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   let voiceFilename = 'imastik-voice-note.webm';
 
   // Napkin sketch state
-  const sketchCtx = napkinCanvas?.getContext('2d');
-  const sketchUndoStack = [];
-  let sketchDrawing = false;
-  let sketchLast = null;
   let sketchColor = '#294b38';
   let hasSketch = false;
 
@@ -109,28 +124,43 @@ export function initOrderForm({ reducedMotion = false } = {}) {
 
   // --- Quantity & pricing ---
   function setQuantity(nextQty) {
-    qty = Math.max(1, Math.min(100, Number.parseInt(nextQty, 10) || 1));
+    const parsed = Number.parseInt(nextQty, 10);
+    qty = Math.max(MIN_QUANTITY, Math.min(MAX_QUANTITY, Number.isNaN(parsed) ? MIN_QUANTITY : parsed));
     const totalFormatted = formatEuro(calculateStickerPrice(qty));
     if (qtyNum) qtyNum.textContent = String(qty);
     if (totalEl) totalEl.textContent = totalFormatted;
     if (summaryLabel) {
-      summaryLabel.textContent = `Your custom sticker · ${qty} ${qty === 1 ? 'piece' : 'pieces'}`;
+      summaryLabel.textContent = `Your custom stickers · ${qty} pieces`;
     }
     if (summaryPrice) summaryPrice.textContent = totalFormatted;
 
     priceCards.forEach((card) => {
-      const cardQty = Number.parseInt(card.dataset.quantity || '1', 10);
-      const selected = cardQty === 3 ? qty >= 3 : qty === cardQty;
+      const cardQty = Number.parseInt(card.dataset.quantity || '5', 10);
+      const selected =
+        (cardQty === 5 && qty < 10) ||
+        (cardQty === 10 && qty >= 10 && qty < 20) ||
+        (cardQty === 20 && qty >= 20);
       card.classList.toggle('is-selected', selected);
+    });
+
+    packPills.forEach((pill) => {
+      const packQty = Number.parseInt(pill.dataset.pack || '5', 10);
+      pill.classList.toggle('is-active', qty === packQty);
     });
   }
 
-  minusBtn?.addEventListener('click', () => setQuantity(qty - 1));
-  plusBtn?.addEventListener('click', () => setQuantity(qty + 1));
+  minusBtn?.addEventListener('click', () => setQuantity(qty - QUANTITY_STEP));
+  plusBtn?.addEventListener('click', () => setQuantity(qty + QUANTITY_STEP));
+
+  packPills.forEach((pill) => {
+    pill.addEventListener('click', () => {
+      setQuantity(Number.parseInt(pill.dataset.pack || '5', 10));
+    });
+  });
 
   priceCards.forEach((card) => {
     const select = () => {
-      setQuantity(Number.parseInt(card.dataset.quantity || '1', 10));
+      setQuantity(Number.parseInt(card.dataset.quantity || '5', 10));
       document.getElementById('order')?.scrollIntoView({
         behavior: reducedMotion ? 'instant' : 'smooth',
       });
@@ -138,7 +168,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     card.addEventListener('click', select);
   });
 
-  setQuantity(1);
+  setQuantity(MIN_QUANTITY);
 
   // --- Progress bar & idea prompt pills ---
   function refreshProgress() {
@@ -334,90 +364,142 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     }
   });
 
-  // --- Napkin Sketch Canvas ---
-  function fillSketchBackground() {
-    if (!sketchCtx || !napkinCanvas) return;
-    sketchCtx.fillStyle = '#fffdf5';
-    sketchCtx.fillRect(0, 0, napkinCanvas.width, napkinCanvas.height);
-  }
+  // --- Napkin Sketch Canvas (inline + fullscreen modal) ---
+  function createSketchSurface(canvas, strokeWidth) {
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return null;
 
-  function pushSketchUndo() {
-    if (!sketchCtx || !napkinCanvas) return;
-    if (sketchUndoStack.length >= 20) sketchUndoStack.shift();
-    sketchUndoStack.push({
-      image: sketchCtx.getImageData(0, 0, napkinCanvas.width, napkinCanvas.height),
-      hadSketch: hasSketch,
-    });
-  }
+    const undoStack = [];
+    let drawing = false;
+    let last = null;
 
-  function getSketchPoint(e) {
-    const r = napkinCanvas.getBoundingClientRect();
-    return {
-      x: ((e.clientX - r.left) * napkinCanvas.width) / r.width,
-      y: ((e.clientY - r.top) * napkinCanvas.height) / r.height,
+    const fillBg = () => {
+      ctx.fillStyle = '#fffdf5';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
     };
-  }
 
-  if (napkinCanvas && sketchCtx) {
-    fillSketchBackground();
+    const pushUndo = () => {
+      if (undoStack.length >= 20) undoStack.shift();
+      undoStack.push({
+        image: ctx.getImageData(0, 0, canvas.width, canvas.height),
+        hadSketch: hasSketch,
+      });
+    };
 
-    napkinCanvas.addEventListener('pointerdown', (e) => {
+    const getPoint = (e) => {
+      const r = canvas.getBoundingClientRect();
+      return {
+        x: ((e.clientX - r.left) * canvas.width) / r.width,
+        y: ((e.clientY - r.top) * canvas.height) / r.height,
+      };
+    };
+
+    fillBg();
+
+    canvas.addEventListener('pointerdown', (e) => {
       if (e.button !== 0 && e.pointerType === 'mouse') return;
       e.preventDefault();
-      pushSketchUndo();
-      sketchDrawing = true;
+      pushUndo();
+      drawing = true;
       hasSketch = true;
-      sketchLast = getSketchPoint(e);
-      napkinCanvas.setPointerCapture(e.pointerId);
-      sketchCtx.beginPath();
-      sketchCtx.arc(sketchLast.x, sketchLast.y, 2.4, 0, Math.PI * 2);
-      sketchCtx.fillStyle = sketchColor;
-      sketchCtx.fill();
+      last = getPoint(e);
+      canvas.setPointerCapture(e.pointerId);
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, strokeWidth * 0.52, 0, Math.PI * 2);
+      ctx.fillStyle = sketchColor;
+      ctx.fill();
     });
 
-    napkinCanvas.addEventListener('pointermove', (e) => {
-      if (!sketchDrawing) return;
+    canvas.addEventListener('pointermove', (e) => {
+      if (!drawing) return;
       e.preventDefault();
-      const p = getSketchPoint(e);
-      sketchCtx.beginPath();
-      sketchCtx.moveTo(sketchLast.x, sketchLast.y);
-      sketchCtx.lineTo(p.x, p.y);
-      sketchCtx.lineWidth = 4.6;
-      sketchCtx.strokeStyle = sketchColor;
-      sketchCtx.lineCap = 'round';
-      sketchCtx.lineJoin = 'round';
-      sketchCtx.stroke();
-      sketchLast = p;
+      const p = getPoint(e);
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.lineWidth = strokeWidth;
+      ctx.strokeStyle = sketchColor;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      last = p;
     });
 
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => {
-      napkinCanvas.addEventListener(ev, () => {
-        sketchDrawing = false;
+      canvas.addEventListener(ev, () => {
+        drawing = false;
       });
     });
 
-    penButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        sketchColor = btn.dataset.pen || '#294b38';
-        penButtons.forEach((b) => b.classList.toggle('active', b === btn));
-      });
+    return {
+      canvas,
+      ctx,
+      pushUndo,
+      undo() {
+        const snap = undoStack.pop();
+        if (!snap) return;
+        ctx.putImageData(snap.image, 0, 0);
+        hasSketch = snap.hadSketch;
+      },
+      clear() {
+        pushUndo();
+        fillBg();
+        hasSketch = false;
+      },
+      copyFrom(sourceCanvas) {
+        fillBg();
+        ctx.drawImage(sourceCanvas, 0, 0, canvas.width, canvas.height);
+      },
+    };
+  }
+
+  function setPenColor(color) {
+    sketchColor = color || '#294b38';
+    [...penButtons, ...penButtonsModal].forEach((b) => {
+      b.classList.toggle('active', b.dataset.pen === sketchColor);
+    });
+  }
+
+  const inlineSurface = createSketchSurface(napkinCanvas, 4.6);
+  const fullSurface = createSketchSurface(napkinCanvasFull, 9.2);
+
+  if (inlineSurface) {
+    [...penButtons, ...penButtonsModal].forEach((btn) => {
+      btn.addEventListener('click', () => setPenColor(btn.dataset.pen));
     });
 
-    sketchUndoBtn?.addEventListener('click', () => {
-      const snap = sketchUndoStack.pop();
-      if (!snap) return;
-      sketchCtx.putImageData(snap.image, 0, 0);
-      hasSketch = snap.hadSketch;
-    });
-
-    sketchClearBtn?.addEventListener('click', () => {
-      pushSketchUndo();
-      fillSketchBackground();
-      hasSketch = false;
-    });
-
+    sketchUndoBtn?.addEventListener('click', () => inlineSurface.undo());
+    sketchClearBtn?.addEventListener('click', () => inlineSurface.clear());
     sketchSaveLink?.addEventListener('click', (e) => {
       e.currentTarget.href = napkinCanvas.toDataURL('image/png');
+    });
+  }
+
+  function closeSketchModal() {
+    if (!sketchModal || sketchModal.classList.contains('hidden')) return;
+    if (inlineSurface && fullSurface) {
+      inlineSurface.pushUndo();
+      inlineSurface.copyFrom(fullSurface.canvas);
+    }
+    sketchModal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  if (sketchModal && fullSurface && inlineSurface) {
+    sketchExpandBtn?.addEventListener('click', () => {
+      fullSurface.copyFrom(inlineSurface.canvas);
+      sketchModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    });
+
+    sketchModalUndoBtn?.addEventListener('click', () => fullSurface.undo());
+    sketchModalClearBtn?.addEventListener('click', () => fullSurface.clear());
+    sketchModalDoneBtn?.addEventListener('click', closeSketchModal);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !sketchModal.classList.contains('hidden')) {
+        closeSketchModal();
+      }
     });
   }
 
@@ -445,8 +527,8 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     const lines = [
       `Name: ${name}`,
       `Email: ${email}`,
-      `Quantity: ${qty}`,
-      `Estimated price: ${price}`,
+      `Sticker pack: ${qty} stickers`,
+      `Estimated total: ${price} (paid via Revolut, bank transfer, or cash after design preview approval)`,
       '',
       `Idea: ${idea || '(See attached photos / sketch / voice note)'}`,
       '',
@@ -481,8 +563,8 @@ export function initOrderForm({ reducedMotion = false } = {}) {
 
     const copy = document.createElement('p');
     copy.textContent = config.hasTeamEmail
-      ? `Click "Open Email App" below to send your request to ${config.teamEmail}. Don’t forget to attach any downloaded files!`
-      : 'Click "Open Email App" and enter the imastik team email address (or set TEAM_EMAIL in Render environment variables so it fills automatically).';
+      ? `Next step: send the pre-filled email to ${config.teamEmail} (attach your sketch/voice note if saved). We'll reply with a design preview and Revolut / bank transfer / cash payment details before printing.`
+      : 'Next step: click "Open Email App", enter the imastik team email address, and hit send (don\'t forget any downloaded sketch or voice note). We\'ll reply with your design preview and payment options (Revolut, bank transfer, or cash) before printing.';
 
     const actions = document.createElement('div');
     actions.className = 'result-actions';

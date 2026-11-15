@@ -210,7 +210,12 @@ export function createApp(options = {}) {
   app.use(
     express.static(publicDir, {
       extensions: ['html'],
-      maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0,
+      maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
+      setHeaders: (res, filePath) => {
+        if (path.extname(filePath).toLowerCase() === '.html') {
+          res.setHeader('Cache-Control', 'no-cache');
+        }
+      },
     }),
   );
 

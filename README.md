@@ -8,9 +8,9 @@ Custom laptop stickers web app rebuilt as a clean Node.js/Express service ready 
 - **Streamlined Page Flow**:
   - Compact sky hero with top **Make an order** CTA
   - **The idea** editorial intro
-  - Single unified pink **Process + Pricing** section with middle **Make an order** CTA and interactive pricing cards (`€3`, `€5`, `€6.50`)
+  - Single unified pink **Process + Pricing** section with middle **Make an order** CTA and interactive pack pricing cards (`5 for €5`, `10 for €8`, `20 for €15`)
   - **Our team** section right after pricing with bottom **Order here** CTA
-  - **Custom Order Form** (`#order`) with reference image upload, **napkin sketch canvas**, **voice note recorder**, and **timelapse consent** checkbox
+  - **Custom Order Form** (`#order`) with reference image upload, **napkin sketch canvas** (with expandable full-screen drawing pad), **voice note recorder**, clear payment steps, and **timelapse consent** checkbox
 - **Flexible Order Submission**:
   - Defaults to `ORDER_MODE=mailto` (opens a pre-filled email draft via `TEAM_EMAIL` env var + Copy Order Details + quick attachment download links).
   - Supports `ORDER_MODE=server` to upload photos, napkin sketches, and voice notes directly to `POST /api/orders` (viewable via Basic-Auth-protected `GET /api/orders`).

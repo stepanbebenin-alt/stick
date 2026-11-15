@@ -38,13 +38,15 @@ async function startTestServer(appOptions = {}) {
 }
 
 test('pricing formula calculates expected euro amounts and clamps bounds', () => {
-  assert.equal(calculateStickerPrice(1), 3);
-  assert.equal(calculateStickerPrice(2), 5);
-  assert.equal(calculateStickerPrice(3), 6.5);
-  assert.equal(calculateStickerPrice(4), 8);
-  assert.equal(formatEuro(calculateStickerPrice(3)), '€6.50');
-  assert.equal(clampQuantity(-5), 1);
-  assert.equal(clampQuantity(250), 100);
+  assert.equal(calculateStickerPrice(5), 5);
+  assert.equal(calculateStickerPrice(10), 8);
+  assert.equal(calculateStickerPrice(15), 11.5);
+  assert.equal(calculateStickerPrice(20), 15);
+  assert.equal(calculateStickerPrice(25), 18.75);
+  assert.equal(formatEuro(calculateStickerPrice(10)), '€8.00');
+  assert.equal(clampQuantity(-5), 5);
+  assert.equal(clampQuantity(1), 5);
+  assert.equal(clampQuantity(250), 200);
 });
 
 test('GET /health and GET / serve imastik app without Playground and with 3 order CTAs', async () => {
@@ -70,6 +72,8 @@ test('GET /health and GET / serve imastik app without Playground and with 3 orde
     assert.match(html, /\/images\/imastik-icon\.png/);
     assert.match(html, /id="orderForm"/);
     assert.match(html, /id="napkinCanvas"/);
+    assert.match(html, /id="sketchExpand"/);
+    assert.match(html, /id="napkinCanvasFull"/);
     assert.match(html, /id="voiceToggle"/);
     assert.doesNotMatch(html, /id="stage"/);
     assert.doesNotMatch(html, /YOUR-TEAM-EMAIL@example\.com/);
@@ -112,7 +116,7 @@ test('POST /api/orders validates input, saves multipart attachments, and enforce
     fd.set('name', 'Milda');
     fd.set('email', 'milda@uni.example');
     fd.set('idea', 'Cat wearing sunglasses');
-    fd.set('quantity', '4');
+    fd.set('quantity', '10');
     fd.set('sharePermission', 'yes');
     fd.append('photos', new Blob([TINY_PNG], { type: 'image/png' }), 'cat.png');
     fd.append('sketch', new Blob([TINY_PNG], { type: 'image/png' }), 'sketch.png');
@@ -122,7 +126,7 @@ test('POST /api/orders validates input, saves multipart attachments, and enforce
     assert.equal(okRes.status, 201);
     const created = await okRes.json();
     assert.equal(created.ok, true);
-    assert.equal(created.quantity, 4);
+    assert.equal(created.quantity, 10);
     assert.equal(created.estimatedPrice, 8);
     assert.equal(created.estimatedPriceFormatted, '€8.00');
     assert.equal(created.filesCount, 3);

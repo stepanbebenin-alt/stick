@@ -175,16 +175,26 @@ header nav a:hover {
   will-change: transform;
 }
 
-/* Compact Hero with balanced spacing */
+/* Hero + Ticker fill the first screen cleanly */
+.hero-stage {
+  min-height: calc(100svh - 74px);
+  display: flex;
+  flex-direction: column;
+}
+
 .hero {
+  flex: 1;
+  display: flex;
+  align-items: center;
   background: linear-gradient(160deg, #91cafa 0%, #b9e0fa 62%, var(--cream) 100%);
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  padding: clamp(38px, 4.8vw, 62px) 5vw clamp(54px, 6.8vw, 86px);
+  padding: clamp(32px, 5vh, 64px) 5vw clamp(40px, 6vh, 76px);
 }
 
 .hero-inner {
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
   position: relative;
@@ -1244,7 +1254,8 @@ header nav a:hover {
   margin-right: 4px;
 }
 
-.pen-dot {
+.pen-dot,
+.pen-dot-modal {
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -1252,7 +1263,8 @@ header nav a:hover {
   box-shadow: 0 0 0 1px #a6b8a2;
 }
 
-.pen-dot.active {
+.pen-dot.active,
+.pen-dot-modal.active {
   box-shadow: 0 0 0 2px var(--green);
   transform: scale(1.12);
 }
@@ -1291,14 +1303,46 @@ header nav a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 15px;
   border-top: 1px solid #e2e9dd;
   padding-top: 18px;
 }
 
-.qty-row > label {
+.qty-meta {
+  display: grid;
+  gap: 8px;
+}
+
+.qty-label {
   font: 700 13px 'DM Sans', sans-serif;
   color: #2c4434;
+}
+
+.pack-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pack-pill {
+  border: 1px solid #c6dac1;
+  background: #fff;
+  color: #244b33;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: 700 12px 'DM Mono', monospace;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.pack-pill:hover {
+  background: #e9f3df;
+}
+
+.pack-pill.is-active {
+  background: #1d5739;
+  color: #fff;
+  border-color: #1d5739;
 }
 
 .qty {
@@ -1361,6 +1405,79 @@ header nav a:hover {
 .studio-live-summary strong {
   font-size: 22px;
   white-space: nowrap;
+}
+
+.payment-steps {
+  grid-column: 1 / -1;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #fff9e8;
+  border: 1px solid #e5ddc4;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #2d4434;
+}
+
+.payment-steps strong {
+  color: #163b25;
+}
+
+/* Fullscreen Napkin Sketch Modal */
+.sketch-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(25, 37, 30, 0.88);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+}
+
+.sketch-modal-bar {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #fff;
+  font: 800 16px 'DM Sans', sans-serif;
+}
+
+.extra-done {
+  background: var(--green) !important;
+  color: #fff !important;
+  border-color: var(--green) !important;
+}
+
+.sketch-modal-stage {
+  flex: 1;
+  min-height: 0;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  background: #fffdf5;
+  border: 2px solid var(--ink);
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 8px;
+  touch-action: none;
+}
+
+.sketch-modal-stage canvas {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
 }
 
 .form-error {
@@ -1569,8 +1686,12 @@ footer {
     display: none;
   }
 
+  .hero-stage {
+    min-height: calc(100svh - 64px);
+  }
+
   .hero {
-    padding: 36px 5vw 50px;
+    padding: 30px 5vw 36px;
   }
 
   .hero h1 {

@@ -9,19 +9,19 @@
     content="imastik turns your photos, doodles, inside jokes, and wild ideas into custom laptop stickers."
   />
   <title>imastik — make something weird</title>
-  <link rel="icon" type="image/png" href="/images/imastik-icon.png" />
+  <link rel="icon" type="image/png" href="/images/imastik-icon.png?v=3" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700;800&family=Playfair+Display:ital,wght@1,700&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="stylesheet" href="/css/styles.css?v=3" />
 </head>
 <body>
   <header id="siteHeader">
     <a class="logo" href="#top" aria-label="imastik home">
-      <img src="/images/imastik-logo.png" alt="imastik" height="38" />
+      <img src="/images/imastik-logo.png?v=3" alt="imastik" height="38" />
     </a>
     <nav aria-label="Primary navigation">
       <a href="#idea">The idea</a>
@@ -35,37 +35,39 @@
   <div class="reading-progress" id="readingProgress" aria-hidden="true"><span></span></div>
 
   <main>
-    <section class="hero" id="top">
-      <div class="hero-inner">
-        <div class="eyebrow">An independent sticker experiment / made for you</div>
-        <h1>YOUR LAPTOP<br /><em>is a</em> CANVAS.</h1>
-        <p>Strange ideas. Inside jokes. Your favourite thing. We turn it into a custom sticker made just for you.</p>
-        <div class="hero-actions">
-          <a class="cta" href="#order">
-            MAKE AN ORDER
-            <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-            </svg>
-          </a>
+    <div class="hero-stage">
+      <section class="hero" id="top">
+        <div class="hero-inner">
+          <div class="eyebrow">An independent sticker experiment / made for you</div>
+          <h1>YOUR LAPTOP<br /><em>is a</em> CANVAS.</h1>
+          <p>Strange ideas. Inside jokes. Your favourite thing. We turn it into a custom sticker made just for you.</p>
+          <div class="hero-actions">
+            <a class="cta" href="#order">
+              MAKE AN ORDER
+              <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
+              </svg>
+            </a>
+          </div>
         </div>
-      </div>
-      <div class="sun" aria-hidden="true"></div>
-      <div class="orbit" aria-hidden="true">
-        <span class="orbit-spark">
-          <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
-            <path d="M24 4v40M4 24h40M9.8 9.8l28.4 28.4M38.2 9.8 9.8 38.2" stroke="currentColor" stroke-width="5.5" stroke-linecap="round"/>
-          </svg>
-        </span>
-      </div>
-      <div class="scribble" aria-hidden="true"></div>
-    </section>
+        <div class="sun" aria-hidden="true"></div>
+        <div class="orbit" aria-hidden="true">
+          <span class="orbit-spark">
+            <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <path d="M24 4v40M4 24h40M9.8 9.8l28.4 28.4M38.2 9.8 9.8 38.2" stroke="currentColor" stroke-width="5.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </div>
+        <div class="scribble" aria-hidden="true"></div>
+      </section>
 
-    <div class="ticker" aria-hidden="true">
-      <div class="ticker-track">
-        <span>YOUR IDEA, MADE REAL &nbsp;·&nbsp; YOUR IDEAS, OUR DESIGN &nbsp;·&nbsp; NOT AN ORDINARY STICKER SHOP &nbsp;·&nbsp;</span>
-        <span>YOUR IDEA, MADE REAL &nbsp;·&nbsp; YOUR IDEAS, OUR DESIGN &nbsp;·&nbsp; NOT AN ORDINARY STICKER SHOP &nbsp;·&nbsp;</span>
-        <span>YOUR IDEA, MADE REAL &nbsp;·&nbsp; YOUR IDEAS, OUR DESIGN &nbsp;·&nbsp; NOT AN ORDINARY STICKER SHOP &nbsp;·&nbsp;</span>
-        <span>YOUR IDEA, MADE REAL &nbsp;·&nbsp; YOUR IDEAS, OUR DESIGN &nbsp;·&nbsp; NOT AN ORDINARY STICKER SHOP &nbsp;·&nbsp;</span>
+      <div class="ticker" aria-hidden="true">
+        <div class="ticker-track">
+          <span>YOUR IDEA, MADE REAL &nbsp;·&nbsp; YOUR IDEAS, OUR DESIGN &nbsp;·&nbsp; NOT AN ORDINARY STICKER SHOP &nbsp;·&nbsp;</span>
+          <span>YOUR IDEA, MADE REAL &nbsp;·&nbsp; YOUR IDEAS, OUR DESIGN &nbsp;·&nbsp; NOT AN ORDINARY STICKER SHOP &nbsp;·&nbsp;</span>
+          <span>YOUR IDEA, MADE REAL &nbsp;·&nbsp; YOUR IDEAS, OUR DESIGN &nbsp;·&nbsp; NOT AN ORDINARY STICKER SHOP &nbsp;·&nbsp;</span>
+          <span>YOUR IDEA, MADE REAL &nbsp;·&nbsp; YOUR IDEAS, OUR DESIGN &nbsp;·&nbsp; NOT AN ORDINARY STICKER SHOP &nbsp;·&nbsp;</span>
+        </div>
       </div>
     </div>
 
@@ -119,35 +121,35 @@
             <button
               type="button"
               class="pricecard is-selected"
-              data-quantity="1"
-              aria-label="Select 1 sticker for €3 in order form"
+              data-quantity="5"
+              aria-label="Select 5 stickers for €5 in order form"
             >
-              <span class="price-kicker">ONE STICKER</span>
-              <strong>€3</strong>
-              <span class="price-desc">One little statement piece.</span>
-              <span class="price-select-hint">SELECT THIS OPTION <span class="hint-arrow" aria-hidden="true"></span></span>
-            </button>
-            <button
-              type="button"
-              class="pricecard"
-              data-quantity="2"
-              aria-label="Select 2 stickers for €5 in order form"
-            >
-              <span class="price-kicker">TWO STICKERS</span>
+              <span class="price-kicker">5 STICKERS</span>
               <strong>€5</strong>
-              <span class="price-desc">Twice the personality.</span>
-              <span class="price-select-hint">SELECT THIS OPTION <span class="hint-arrow" aria-hidden="true"></span></span>
+              <span class="price-desc">€1.00 per sticker · starter pack.</span>
+              <span class="price-select-hint">SELECT THIS PACK <span class="hint-arrow" aria-hidden="true"></span></span>
             </button>
             <button
               type="button"
               class="pricecard"
-              data-quantity="3"
-              aria-label="Select 3 stickers for €6.50 in order form"
+              data-quantity="10"
+              aria-label="Select 10 stickers for €8 in order form"
             >
-              <span class="price-kicker">THREE STICKERS</span>
-              <strong>€6.50</strong>
-              <span class="price-desc">+ €1.50 for each extra sticker.</span>
-              <span class="price-select-hint">SELECT THIS OPTION <span class="hint-arrow" aria-hidden="true"></span></span>
+              <span class="price-kicker">10 STICKERS</span>
+              <strong>€8</strong>
+              <span class="price-desc">€0.80 per sticker · share with friends.</span>
+              <span class="price-select-hint">SELECT THIS PACK <span class="hint-arrow" aria-hidden="true"></span></span>
+            </button>
+            <button
+              type="button"
+              class="pricecard"
+              data-quantity="20"
+              aria-label="Select 20 stickers for €15 in order form"
+            >
+              <span class="price-kicker">20 STICKERS</span>
+              <strong>€15</strong>
+              <span class="price-desc">€0.75 per sticker · best value pack.</span>
+              <span class="price-select-hint">SELECT THIS PACK <span class="hint-arrow" aria-hidden="true"></span></span>
             </button>
           </div>
 
@@ -159,7 +161,7 @@
           </a>
 
           <p class="price-after-note">
-            Every sticker starts with your idea. Send a photo, a few words, a voice note, or a quick sketch — our team takes care of the design.
+            Every sticker starts with your idea. Send a photo, a few words, a voice note, or a quick sketch — our team handles the design. No card needed upfront: we send your design preview and payment instructions before printing.
           </p>
         </div>
       </div>
@@ -470,6 +472,7 @@
                     <button type="button" class="pen-dot" data-pen="#19201b" style="background:#19201b" aria-label="Black ink pen"></button>
                     <button type="button" class="pen-dot" data-pen="#f04a38" style="background:#f04a38" aria-label="Red pen"></button>
                   </div>
+                  <button class="extra-button" id="sketchExpand" type="button">Make a bigger sketch</button>
                   <button class="extra-button" id="sketchUndo" type="button">Undo</button>
                   <button class="extra-button" id="sketchClear" type="button">Clear</button>
                   <a class="extra-save" id="sketchSave" download="imastik-sketch.png" href="#sketch">Save sketch</a>
@@ -491,22 +494,33 @@
           </div>
 
           <div class="qty-row">
-            <label for="qtyNum">How many stickers?</label>
+            <div class="qty-meta">
+              <span class="qty-label">How many stickers?</span>
+              <div class="pack-pills" role="group" aria-label="Choose a sticker pack">
+                <button type="button" class="pack-pill is-active" data-pack="5">5 · €5</button>
+                <button type="button" class="pack-pill" data-pack="10">10 · €8</button>
+                <button type="button" class="pack-pill" data-pack="20">20 · €15</button>
+              </div>
+            </div>
             <div class="qty">
-              <button aria-label="Decrease quantity" id="minus" type="button">−</button>
-              <strong id="qtyNum" aria-live="polite">1</strong>
-              <button aria-label="Increase quantity" id="plus" type="button">+</button>
+              <button aria-label="Decrease quantity by 5" id="minus" type="button">−</button>
+              <strong id="qtyNum" aria-live="polite">5</strong>
+              <button aria-label="Increase quantity by 5" id="plus" type="button">+</button>
             </div>
           </div>
 
           <div class="total">
             <span>Estimated price</span>
-            <strong id="total">€3.00</strong>
+            <strong id="total">€5.00</strong>
           </div>
 
           <div class="studio-live-summary" aria-live="polite">
-            <span id="studioSummaryLabel">Your custom sticker · 1 piece</span>
-            <strong id="studioSummaryPrice">€3.00</strong>
+            <span id="studioSummaryLabel">Your custom stickers · 5 pieces</span>
+            <strong id="studioSummaryPrice">€5.00</strong>
+          </div>
+
+          <div class="payment-steps">
+            <strong>How paying works:</strong> Submitting your idea is free — no card needed here. This opens a pre-filled email draft to send us your request, and we'll reply with your design preview plus payment options (Revolut, bank transfer, or cash) before printing.
           </div>
 
           <p class="form-error hidden" id="formError" role="alert"></p>
@@ -521,7 +535,7 @@
           <div class="order-result hidden" id="orderResult" aria-live="polite"></div>
 
           <span class="fine">
-            Price excludes any delivery fees, if applicable.
+            Price excludes any delivery fees, if applicable. Minimum order is 5 stickers.
           </span>
         </form>
       </div>
@@ -531,12 +545,31 @@
   <footer>
     <div class="footer-brand-wrap">
       <a class="footer-brand" href="#top" aria-label="Back to top">
-        <img src="/images/imastik-logo.png" alt="imastik" height="28" />
+        <img src="/images/imastik-logo.png?v=3" alt="imastik" height="28" />
       </a>
       <span>IMASTIK® / MADE WITH TOO MANY IDEAS</span>
     </div>
     <span>DESIGNED TO BE DIFFERENT 2026</span>
   </footer>
+
+  <div class="sketch-modal hidden" id="sketchModal" role="dialog" aria-modal="true" aria-label="Full screen napkin sketch pad">
+    <div class="sketch-modal-bar">
+      <strong>Napkin Sketch Pad</strong>
+      <div class="sketch-actions">
+        <div class="sketch-pens" role="group" aria-label="Full screen pen colour">
+          <button type="button" class="pen-dot-modal active" data-pen="#294b38" style="background:#294b38" aria-label="Dark green pen"></button>
+          <button type="button" class="pen-dot-modal" data-pen="#19201b" style="background:#19201b" aria-label="Black ink pen"></button>
+          <button type="button" class="pen-dot-modal" data-pen="#f04a38" style="background:#f04a38" aria-label="Red pen"></button>
+        </div>
+        <button class="extra-button" id="sketchModalUndo" type="button">Undo</button>
+        <button class="extra-button" id="sketchModalClear" type="button">Clear</button>
+        <button class="extra-button extra-done" id="sketchModalDone" type="button">Done</button>
+      </div>
+    </div>
+    <div class="sketch-modal-stage">
+      <canvas id="napkinCanvasFull" width="1360" height="740" aria-label="Draw your sticker idea full screen"></canvas>
+    </div>
+  </div>
 
   <a class="studio-mobile-cta is-hidden" id="mobileCta" href="#order" aria-label="Jump to order form">
     <span>MAKE YOUR STICKER</span>
@@ -545,6 +578,6 @@
     </svg>
   </a>
 
-  <script type="module" src="/js/main.js"></script>
+  <script type="module" src="/js/main.js?v=3"></script>
 </body>
 </html>
