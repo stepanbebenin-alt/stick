@@ -1,5 +1,6 @@
-import { initOrderForm } from './order-form.js?v=5';
-import { initStore } from './store.js?v=5';
+import { initOrderForm } from './order-form.js?v=6';
+import { initStickerDrag } from './sticker-drag.js?v=6';
+import { initStore } from './store.js?v=6';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -89,9 +90,10 @@ if ('IntersectionObserver' in window && !reducedMotion) {
   revealTargets.forEach((el) => el.classList.add('in-view'));
 }
 
-// Initialize Order Form & Public Sticker Store
+// Initialize Order Form, Public Sticker Store & Draggable Page Stickers
 const orderApi = initOrderForm({ reducedMotion });
 initStore({
   reducedMotion,
   onSelectDesign: (design, qty) => orderApi?.selectStoreDesign?.(design, qty),
 });
+initStickerDrag();

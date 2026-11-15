@@ -4,7 +4,7 @@
  * let anyone pre-fill the order form in packs of 5 (€5), 10 (€8), or 20 (€15).
  */
 
-import { calculateStickerPrice } from './order-form.js?v=5';
+import { calculateStickerPrice } from './order-form.js?v=6';
 
 const PACK_OPTIONS = [5, 10, 20];
 
@@ -82,7 +82,7 @@ export const STORE_DESIGNS = [
     credit: 'By imastik',
     blurb: 'Bold studio peel bulb for cases, tablets & bikes.',
     tilt: '-1.6deg',
-    accentBg: '#d8edff',
+    accentBg: '#fff2a6',
     svg: `
       <svg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Peel-Bulb Mascot sticker illustration">
         <defs>
@@ -112,7 +112,7 @@ export const STORE_DESIGNS = [
     credit: 'By imastik',
     blurb: 'Retro desktop window for study laptops & tablets.',
     tilt: '2.4deg',
-    accentBg: '#e2f5b4',
+    accentBg: '#ffcbe1',
     svg: `
       <svg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="37 Tabs Open sticker illustration">
         <defs>
@@ -198,7 +198,7 @@ export const STORE_DESIGNS = [
   },
 ];
 
-function parseSvgNode(svgString) {
+export function parseSvgNode(svgString) {
   const doc = new DOMParser().parseFromString(svgString.trim(), 'image/svg+xml');
   const root = doc.documentElement;
   if (!root || root.nodeName.toLowerCase() !== 'svg') return null;

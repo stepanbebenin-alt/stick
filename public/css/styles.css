@@ -1,18 +1,21 @@
 :root {
-  --blue: #a8d7f8;
-  --green: #1e8d45;
-  --green-dark: #155b3b;
+  --blue: #ff9fc6;
+  --green: #c8256a;
+  --green-dark: #9c1a50;
   --cream: #fff9e9;
   --paper: #fffdf6;
   --ink: #19251e;
   --muted: #46534b;
   --pink: #ff9fc6;
+  --pink-soft: #ffd6e7;
   --yellow: #ffe04a;
-  --lime: #d7f26b;
+  --yellow-soft: #fff3b0;
+  --lime: #ffe04a;
   --red: #f04a38;
   --radius: 20px;
   --ease-studio: cubic-bezier(0.22, 1, 0.36, 1);
   --shadow-soft: 0 18px 42px rgba(25, 37, 30, 0.09);
+  --pencil-cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M3 21l1.4-4.8L16.5 4.1a2.1 2.1 0 0 1 3 0l.4.4a2.1 2.1 0 0 1 0 3L7.8 19.6 3 21z' fill='%23ffe04a' stroke='%2319251e' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cpath d='M15 5.6l3.4 3.4' stroke='%2319251e' stroke-width='1.6'/%3E%3Cpath d='M16.5 4.1a2.1 2.1 0 0 1 3 0l.4.4a2.1 2.1 0 0 1 0 3L18.4 9 15 5.6l1.5-1.5z' fill='%23ff9fc6' stroke='%2319251e' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M3 21l2.8-.9-1.9-1.9L3 21z' fill='%2319251e'/%3E%3C/svg%3E") 3 21, crosshair;
 }
 
 *,
@@ -35,6 +38,10 @@ body {
   overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+main {
+  position: relative;
 }
 
 button,
@@ -186,7 +193,7 @@ header nav a:hover {
   flex: 1;
   display: flex;
   align-items: center;
-  background: linear-gradient(160deg, #91cafa 0%, #b9e0fa 62%, var(--cream) 100%);
+  background: linear-gradient(155deg, #ffe04a 0%, #ffea83 56%, var(--cream) 100%);
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -202,11 +209,11 @@ header nav a:hover {
 }
 
 .hero h1 {
-  font: 900 clamp(38px, 6.4vw, 90px) / 0.94 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.06em;
+  font: 700 clamp(40px, 6.6vw, 92px) / 0.96 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.025em;
   margin: 18px 0 18px;
   max-width: 960px;
-  filter: drop-shadow(3px 4px 0 #fff8e0);
+  filter: drop-shadow(3px 4px 0 #fff9e9);
   text-wrap: balance;
 }
 
@@ -215,7 +222,7 @@ header nav a:hover {
   font-style: italic;
   font-weight: 700;
   color: var(--green);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
 }
 
 .hero p {
@@ -237,20 +244,99 @@ header nav a:hover {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--red);
+  background: var(--ink);
   color: #fff;
   border: 2px solid var(--ink);
   padding: 15px 26px;
   border-radius: 999px;
   font-weight: 700;
   text-decoration: none;
-  box-shadow: 4px 4px 0 var(--ink);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 5px 5px 0 var(--pink);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .hero .cta:hover {
   transform: translateY(-3px);
+  background: var(--green);
   box-shadow: 6px 7px 0 var(--ink);
+}
+
+.hero-sticker-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.sticker-ctrl-btn {
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--pink-soft);
+  color: var(--ink);
+  padding: 7px 14px;
+  font: 700 11.5px/1 'DM Mono', monospace;
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+.sticker-ctrl-btn:hover {
+  background: var(--pink);
+  transform: translateY(-1px);
+}
+
+.sticker-ctrl-reset {
+  background: #fff;
+}
+
+.sticker-ctrl-hint {
+  font: 500 11.5px/1.3 'DM Mono', monospace;
+  color: #36453b;
+}
+
+/* Draggable page-wide sticker overlay */
+.site-sticker-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 25;
+}
+
+.peel-sticker {
+  position: absolute;
+  pointer-events: auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transform: rotate(var(--peel-angle, 0deg));
+  transition: transform 0.2s var(--ease-studio), filter 0.2s ease;
+  filter: drop-shadow(0 8px 14px rgba(25, 37, 30, 0.2));
+}
+
+.peel-sticker svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.peel-sticker:hover {
+  transform: rotate(0deg) scale(1.06);
+  filter: drop-shadow(0 12px 18px rgba(25, 37, 30, 0.25));
+}
+
+.peel-sticker.is-dragging {
+  cursor: grabbing;
+  transform: rotate(-2deg) scale(1.1);
+  filter: drop-shadow(0 18px 26px rgba(25, 37, 30, 0.3));
+  transition: none;
+}
+
+.peel-sticker.is-mobile-hidden {
+  display: none;
 }
 
 .hero .sun {
@@ -259,7 +345,7 @@ header nav a:hover {
   top: 12%;
   width: clamp(88px, 13vw, 170px);
   height: clamp(88px, 13vw, 170px);
-  background: var(--yellow);
+  background: var(--pink);
   border-radius: 50%;
   filter: blur(1px);
   pointer-events: none;
@@ -309,7 +395,7 @@ header nav a:hover {
 
 /* Ticker */
 .ticker {
-  background: var(--yellow);
+  background: var(--pink);
   padding: 13px 0;
   white-space: nowrap;
   overflow: hidden;
@@ -342,8 +428,8 @@ header nav a:hover {
 }
 
 .idea-title {
-  font: 900 clamp(30px, 6.8vw, 94px) / 1.01 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.058em;
+  font: 700 clamp(32px, 6.8vw, 94px) / 1.01 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.025em;
   max-width: 1100px;
   margin: 22px 0 26px;
 }
@@ -365,7 +451,7 @@ header nav a:hover {
 
 /* Public Sticker Store / Archive Section */
 .store-section {
-  background: #e9f6c8;
+  background: #fff3b0;
   padding: clamp(64px, 8.2vw, 110px) 5vw;
   color: var(--ink);
   border-top: 1px solid rgba(25, 37, 30, 0.1);
@@ -384,8 +470,8 @@ header nav a:hover {
 }
 
 .store-head h2 {
-  font: 900 clamp(32px, 6.2vw, 84px) / 0.96 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.056em;
+  font: 700 clamp(34px, 6.2vw, 84px) / 0.98 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.025em;
   margin: 18px 0 0;
 }
 
@@ -552,7 +638,7 @@ header nav a:hover {
 }
 
 .store-pack-btn.is-active {
-  background: #d7f26b;
+  background: var(--pink);
   border-color: var(--ink);
 }
 
@@ -595,8 +681,8 @@ header nav a:hover {
 }
 
 .how-simple h2 {
-  font: 900 clamp(44px, 7.6vw, 108px) / 1.02 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.065em;
+  font: 700 clamp(44px, 7.6vw, 106px) / 1.02 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.025em;
   max-width: 1050px;
   margin: 20px 0 clamp(34px, 4.8vw, 56px);
   text-wrap: balance;
@@ -604,11 +690,11 @@ header nav a:hover {
 
 .how-simple h2 em {
   display: inline-block;
-  font-family: 'Archivo Black', Arial, sans-serif;
-  font-weight: 900;
+  font-family: 'Fredoka', 'DM Sans', Arial, sans-serif;
+  font-weight: 700;
   font-style: normal;
   color: var(--green-dark);
-  letter-spacing: -0.065em;
+  letter-spacing: -0.025em;
 }
 
 .how-steps {
@@ -642,8 +728,8 @@ header nav a:hover {
 }
 
 .how-steps article h3 {
-  font: 900 clamp(23px, 2.5vw, 34px) / 1.1 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.035em;
+  font: 700 clamp(24px, 2.5vw, 34px) / 1.1 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.02em;
   margin: 22px 0 12px;
   color: #182a20;
 }
@@ -671,8 +757,8 @@ header nav a:hover {
 }
 
 .sectiontop h2 {
-  font: 900 clamp(42px, 6.6vw, 96px) / 0.94 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.07em;
+  font: 700 clamp(42px, 6.6vw, 94px) / 0.96 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.025em;
   margin: 0;
 }
 
@@ -711,7 +797,7 @@ header nav a:hover {
 }
 
 .pricecard:nth-child(3) {
-  background: #b6dcf8;
+  background: #ffe0ee;
   transform: rotate(-0.5deg);
 }
 
@@ -730,8 +816,8 @@ header nav a:hover {
 }
 
 .pricecard strong {
-  font: 900 clamp(46px, 5.4vw, 88px) / 1 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.06em;
+  font: 700 clamp(46px, 5.4vw, 88px) / 1 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.025em;
   font-variant-numeric: lining-nums tabular-nums;
   margin-bottom: 12px;
 }
@@ -778,8 +864,10 @@ header nav a:hover {
   max-width: 100%;
   padding: 16px 26px;
   border-radius: 999px;
-  background: #1d813e;
+  background: var(--ink);
   color: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--yellow);
   text-decoration: none;
   font: 800 14px 'DM Sans', Arial, sans-serif;
   letter-spacing: 0.03em;
@@ -788,8 +876,8 @@ header nav a:hover {
 
 .order-link:hover {
   transform: translateY(-3px);
-  background: #145e2d;
-  box-shadow: 4px 5px 0 var(--ink);
+  background: var(--green);
+  box-shadow: 5px 6px 0 var(--ink);
 }
 
 .order-link-price {
@@ -846,8 +934,8 @@ header nav a:hover {
 }
 
 .team-intro h3 {
-  font: 900 clamp(42px, 6vw, 82px) / 1 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.065em;
+  font: 700 clamp(42px, 6vw, 82px) / 1.02 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.025em;
   margin: 14px 0 0;
 }
 
@@ -935,8 +1023,8 @@ header nav a:hover {
 }
 
 .member-letter {
-  font: 900 clamp(100px, 12vw, 175px) / 1 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.08em;
+  font: 700 clamp(100px, 12vw, 175px) / 1 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.03em;
 }
 
 .member-number {
@@ -969,29 +1057,29 @@ header nav a:hover {
 }
 
 .avatar-pink {
-  background: #ffc1d8;
-  color: #ad315a;
+  background: #ffb8d5;
+  color: #9e1e54;
 }
 
 .avatar-blue {
-  background: #badcf5;
-  color: #2263a3;
+  background: #ffe0ec;
+  color: #9e1e54;
 }
 
 .avatar-yellow {
-  background: #f7e877;
-  color: #725b19;
+  background: #ffe04a;
+  color: #705506;
 }
 
 .avatar-green {
-  background: #b8e6aa;
-  color: #27744a;
+  background: #fff2a6;
+  color: #705506;
 }
 
 .team-name {
   margin: 17px 12px 5px;
-  font: 900 clamp(19px, 2vw, 26px) / 1.15 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.04em;
+  font: 700 clamp(20px, 2vw, 26px) / 1.15 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.02em;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1002,7 +1090,7 @@ header nav a:hover {
   display: block;
   margin: 0 12px;
   font-size: 13px;
-  color: #345344;
+  color: #463a40;
   overflow-wrap: anywhere;
 }
 
@@ -1013,13 +1101,13 @@ header nav a:hover {
   display: flex;
   gap: 22px;
   align-items: flex-start;
-  background: #eaf2dc;
+  background: #fff3b0;
   border-radius: 20px;
-  border: 1px solid #c9d8be;
+  border: 2px solid var(--ink);
 }
 
 .team-design-symbol {
-  color: #287a46;
+  color: var(--green);
   flex-shrink: 0;
 }
 
@@ -1033,14 +1121,38 @@ header nav a:hover {
   line-height: 1.65;
   max-width: 790px;
   margin: 9px 0 12px;
-  color: #263c30;
+  color: #2b2427;
+}
+
+.team-note-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  align-items: center;
 }
 
 .team-design-note a {
   font-weight: 800;
   text-decoration: underline;
   text-underline-offset: 4px;
-  color: #145d35;
+  color: #9e1e54;
+}
+
+.team-design-note a.team-club-ig {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  background: var(--pink);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  padding: 8px 15px;
+  font-size: 13px;
+}
+
+.team-design-note a.team-club-ig:hover {
+  background: #fff;
 }
 
 .team-footnote {
@@ -1079,8 +1191,8 @@ header nav a:hover {
 }
 
 .orderwrap h2 {
-  font: 900 clamp(48px, 6.8vw, 96px) / 0.9 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.07em;
+  font: 700 clamp(48px, 6.8vw, 96px) / 0.94 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.025em;
   margin: 18px 0 24px;
 }
 
@@ -1123,10 +1235,10 @@ header nav a:hover {
 }
 
 .form-heading h3 {
-  font: 900 clamp(25px, 3vw, 39px) / 1.12 'Archivo Black', Arial, sans-serif;
-  letter-spacing: -0.045em;
+  font: 700 clamp(26px, 3.1vw, 40px) / 1.12 'Fredoka', 'DM Sans', Arial, sans-serif;
+  letter-spacing: -0.02em;
   margin: 10px 0 8px;
-  color: #183b29;
+  color: var(--ink);
 }
 
 .form-heading p {
@@ -1237,13 +1349,13 @@ header nav a:hover {
 }
 
 .idea-prompt:hover {
-  background: #d9f2c7;
-  border-color: #307a4e;
+  background: var(--pink-soft);
+  border-color: var(--ink);
 }
 
 .reference-drop {
-  border: 1.5px dashed #9ebfa5;
-  background: #f2f8ee;
+  border: 1.5px dashed #cabd98;
+  background: #fff9e8;
   border-radius: 17px;
   padding: 26px 18px;
   display: flex;
@@ -1258,8 +1370,8 @@ header nav a:hover {
 
 .reference-drop:hover,
 .reference-drop.dragging {
-  background: #e6f4de;
-  border-color: #1e8d45;
+  background: #fff2b2;
+  border-color: var(--ink);
 }
 
 .reference-drop .drop-icon {
@@ -1461,7 +1573,7 @@ header nav a:hover {
   height: auto;
   display: block;
   touch-action: none;
-  cursor: crosshair;
+  cursor: var(--pencil-cursor);
 }
 
 .sketch-pens {
@@ -1527,7 +1639,7 @@ header nav a:hover {
   gap: 12px;
   padding: 13px 16px;
   border-radius: 14px;
-  background: #edf7ce;
+  background: #fff3b0;
   border: 2px solid var(--ink);
 }
 
@@ -1605,13 +1717,13 @@ header nav a:hover {
 }
 
 .pack-pill:hover {
-  background: #e9f3df;
+  background: #ffd6e7;
 }
 
 .pack-pill.is-active {
-  background: #1d5739;
+  background: var(--ink);
   color: #fff;
-  border-color: #1d5739;
+  border-color: var(--ink);
 }
 
 .qty {
@@ -1621,8 +1733,8 @@ header nav a:hover {
 }
 
 .qty button {
-  border: 1px solid #cfdfc7;
-  background: #e8f2dc;
+  border: 1.5px solid #d9d0b4;
+  background: #fff3b0;
   border-radius: 50%;
   width: 43px;
   height: 43px;
@@ -1631,11 +1743,11 @@ header nav a:hover {
 }
 
 .qty button:hover {
-  background: #d3e9c2;
+  background: var(--pink-soft);
 }
 
 .qty strong {
-  font: 900 26px 'Archivo Black', Arial, sans-serif;
+  font: 700 28px 'Fredoka', 'DM Sans', Arial, sans-serif;
   min-width: 34px;
   text-align: center;
 }
@@ -1647,7 +1759,7 @@ header nav a:hover {
   align-items: center;
   border-top: 1px solid #e2e9dd;
   padding-top: 17px;
-  color: #23412c;
+  color: var(--ink);
 }
 
 .total span {
@@ -1655,14 +1767,14 @@ header nav a:hover {
 }
 
 .total strong {
-  font: 900 36px 'Archivo Black', Arial, sans-serif;
+  font: 700 38px 'Fredoka', 'DM Sans', Arial, sans-serif;
 }
 
 .studio-live-summary {
   grid-column: 1 / -1;
   padding: 15px 19px;
-  border: 1px solid rgba(49, 92, 61, 0.35);
-  background: #eef6e6;
+  border: 1.5px solid rgba(25, 37, 30, 0.25);
+  background: #fff3b0;
   border-radius: 14px;
   display: flex;
   justify-content: space-between;
@@ -1746,7 +1858,7 @@ header nav a:hover {
   height: auto;
   display: block;
   touch-action: none;
-  cursor: crosshair;
+  cursor: var(--pencil-cursor);
 }
 
 .form-error {
@@ -1762,9 +1874,10 @@ header nav a:hover {
 
 .formgrid .action {
   grid-column: 1 / -1;
-  background: #1d5739;
+  background: var(--ink);
   color: #fff;
-  border: 0;
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--pink);
   border-radius: 999px;
   padding: 19px;
   font: 800 16px 'DM Sans', sans-serif;
@@ -1777,9 +1890,9 @@ header nav a:hover {
 }
 
 .formgrid .action:hover {
-  background: #26764a;
+  background: var(--green);
   transform: translateY(-2px);
-  box-shadow: 0 12px 0 rgba(23, 34, 27, 0.14);
+  box-shadow: 5px 6px 0 var(--ink);
 }
 
 .formgrid .action:disabled {
@@ -1872,6 +1985,24 @@ footer {
   display: block;
   height: 26px;
   width: auto;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: var(--yellow);
+  font-weight: 700;
+}
+
+.footer-links a:hover {
+  color: var(--pink);
+  text-decoration: underline;
 }
 
 .studio-mobile-cta {

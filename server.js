@@ -90,7 +90,8 @@ export function createApp(options = {}) {
   const uploadDir = options.uploadDir || path.join(rootDir, 'uploads');
   const ordersFile = path.join(dataDir, 'orders.json');
 
-  const getTeamEmail = () => String(options.teamEmail ?? process.env.TEAM_EMAIL ?? '').trim();
+  const getTeamEmail = () =>
+    String(options.teamEmail ?? (process.env.TEAM_EMAIL || 'imastik.co@gmail.com')).trim();
   const getOrderMode = () => normalizeOrderMode(options.orderMode ?? process.env.ORDER_MODE);
   const getAdminPassword = () => String(options.adminPassword ?? process.env.ADMIN_PASSWORD ?? '').trim();
 

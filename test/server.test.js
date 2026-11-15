@@ -70,6 +70,10 @@ test('GET /health and GET / serve imastik app without Playground and with 3 orde
     const html = await htmlRes.text();
     assert.match(html, /\/images\/imastik-logo\.png/);
     assert.match(html, /\/images\/imastik-icon\.png/);
+    assert.match(html, /imastik\.co@gmail\.com/);
+    assert.match(html, /instagram\.com\/imastik\.co/);
+    assert.match(html, /id="siteStickerLayer"/);
+    assert.match(html, /id="addPageSticker"/);
     assert.match(html, /id="orderForm"/);
     assert.match(html, /id="store"/);
     assert.match(html, /id="storeGrid"/);

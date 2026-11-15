@@ -11,5 +11,7 @@ services:
         value: production
       - key: ORDER_MODE
         value: mailto
+      - key: TEAM_EMAIL
+        value: imastik.co@gmail.com
       - key: ADMIN_PASSWORD
         generateValue: true

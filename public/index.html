@@ -13,10 +13,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700;800&family=Playfair+Display:ital,wght@1,700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700;800&family=Fredoka:wght@600;700&family=Playfair+Display:ital,wght@1,700&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="/css/styles.css?v=5" />
+  <link rel="stylesheet" href="/css/styles.css?v=6" />
 </head>
 <body>
   <header id="siteHeader">
@@ -36,6 +36,7 @@
   <div class="reading-progress" id="readingProgress" aria-hidden="true"><span></span></div>
 
   <main>
+    <div class="site-sticker-layer" id="siteStickerLayer" aria-label="Peel and drag stickers across the page"></div>
     <div class="hero-stage">
       <section class="hero" id="top">
         <div class="hero-inner">
@@ -49,6 +50,11 @@
                 <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
               </svg>
             </a>
+          </div>
+          <div class="hero-sticker-controls">
+            <button type="button" class="sticker-ctrl-btn" id="addPageSticker">+ Drop a sticker</button>
+            <button type="button" class="sticker-ctrl-btn sticker-ctrl-reset hidden" id="resetPageStickers">Reset spots</button>
+            <span class="sticker-ctrl-hint">Peel &amp; drag these stickers anywhere on the site</span>
           </div>
         </div>
         <div class="sun" aria-hidden="true"></div>
@@ -366,16 +372,24 @@
             Our team works together on your order. Linas handles the graphic design — he has a diploma in graphic design
             and can create detailed, complex artwork to suit your vision. You bring the idea, and we’ll take it from there.
           </p>
-          <a href="https://www.instagram.com/linas.psd" rel="noopener noreferrer" target="_blank">
-            Explore Linas’s design Instagram · @linas.psd
-            <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-            </svg>
-          </a>
+          <div class="team-note-links">
+            <a href="https://www.instagram.com/linas.psd" rel="noopener noreferrer" target="_blank">
+              Explore Linas’s design Instagram · @linas.psd
+              <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
+              </svg>
+            </a>
+            <a class="team-club-ig" href="https://www.instagram.com/imastik.co" rel="noopener noreferrer" target="_blank">
+              Follow the club Instagram · @imastik.co
+              <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
 
-      <p class="team-footnote">Follow the people behind the club</p>
+      <p class="team-footnote">Follow the people behind the club · @imastik.co</p>
       <a class="order-link order-link-team" href="#order">
         READY TO MAKE SOMETHING? ORDER HERE
         <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -566,7 +580,7 @@
           </div>
 
           <div class="payment-steps">
-            <strong>How paying works:</strong> Submitting your idea is free — no card needed here. This opens a pre-filled email draft to send us your request, and we'll reply with your design preview plus payment options (Revolut, bank transfer, or cash) before printing.
+            <strong>How paying works:</strong> Submitting your idea is free — no card needed here. This opens a pre-filled email draft to <strong>imastik.co@gmail.com</strong>, and we'll reply with your design preview plus payment options (Revolut, bank transfer, or cash) before printing.
           </div>
 
           <p class="form-error hidden" id="formError" role="alert"></p>
@@ -595,7 +609,11 @@
       </a>
       <span>IMASTIK® / MADE WITH TOO MANY IDEAS</span>
     </div>
-    <span>DESIGNED TO BE DIFFERENT 2026</span>
+    <div class="footer-links">
+      <a href="https://www.instagram.com/imastik.co" rel="noopener noreferrer" target="_blank">@imastik.co ↗</a>
+      <a href="mailto:imastik.co@gmail.com">imastik.co@gmail.com</a>
+      <span>DESIGNED TO BE DIFFERENT 2026</span>
+    </div>
   </footer>
 
   <div class="sketch-modal hidden" id="sketchModal" role="dialog" aria-modal="true" aria-label="Full screen napkin sketch pad">
@@ -624,6 +642,6 @@
     </svg>
   </a>
 
-  <script type="module" src="/js/main.js?v=5"></script>
+  <script type="module" src="/js/main.js?v=6"></script>
 </body>
 </html>
