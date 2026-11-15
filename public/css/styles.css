@@ -1944,6 +1944,10 @@ header nav a.nav-cta:hover {
   cursor: pointer;
 }
 
+.timelapse-consent + .timelapse-consent {
+  margin-top: 10px;
+}
+
 .timelapse-consent input {
   flex: none;
   width: 18px;

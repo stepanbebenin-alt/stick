@@ -86,6 +86,8 @@ test('GET /health and GET / serve rebuilt imastik app with Playground, logo, and
     assert.match(html, /id="sketchExpand"/);
     assert.match(html, /id="napkinCanvasFull"/);
     assert.match(html, /id="voiceToggle"/);
+    assert.match(html, /name="share_permission"/);
+    assert.match(html, /name="store_permission"/);
     assert.doesNotMatch(html, /YOUR-TEAM-EMAIL@example\.com/);
     assert.doesNotMatch(html, /STICKY CLUB/);
     assert.doesNotMatch(html, /<script(?![^>]*\bsrc=)/i);
