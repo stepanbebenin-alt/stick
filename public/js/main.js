@@ -1,8 +1,9 @@
-import { initOrderForm } from './order-form.js?v=6';
-import { initStickerDrag } from './sticker-drag.js?v=6';
-import { initStore } from './store.js?v=6';
+import { initOrderForm } from './order-form.js?v=7';
+import { initPlayground } from './playground.js?v=7';
+import { initStarCursor } from './star-cursor.js?v=7';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 // Scroll reading progress bar + sticky header elevation
 const progressBar = document.querySelector('#readingProgress span');
@@ -28,7 +29,7 @@ window.addEventListener('scroll', onScroll, { passive: true });
 window.addEventListener('resize', onScroll, { passive: true });
 onScroll();
 
-// Smooth-scroll in-page anchor links (consistent across browsers)
+// Smooth-scroll in-page anchor links
 document.querySelectorAll('a[href^="#"]').forEach((link) => {
   link.addEventListener('click', (e) => {
     const targetId = link.getAttribute('href');
@@ -90,10 +91,24 @@ if ('IntersectionObserver' in window && !reducedMotion) {
   revealTargets.forEach((el) => el.classList.add('in-view'));
 }
 
-// Initialize Order Form, Public Sticker Store & Draggable Page Stickers
+// Gentle desktop tilt on cards
+if (finePointer && !reducedMotion) {
+  document.querySelectorAll('.team-person, .pricecard').forEach((el) => {
+    el.addEventListener('pointermove', (e) => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      el.style.transform = `perspective(700px) rotateY(${(x * 4).toFixed(2)}deg) rotateX(${(-y * 4).toFixed(2)}deg) translateY(-4px)`;
+    });
+    el.addEventListener('pointerleave', () => {
+      el.style.transform = '';
+    });
+  });
+}
+
+// Initialize Order Form, Interactive Sticker Playground & Smiley Star Cursor
 const orderApi = initOrderForm({ reducedMotion });
-initStore({
-  reducedMotion,
-  onSelectDesign: (design, qty) => orderApi?.selectStoreDesign?.(design, qty),
+initPlayground({
+  onAttachToOrder: (file) => orderApi?.addExternalPhotos?.([file]),
 });
-initStickerDrag();
+initStarCursor();

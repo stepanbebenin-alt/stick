@@ -112,7 +112,10 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   fetch('/api/config')
     .then((r) => (r.ok ? r.json() : null))
     .then((data) => {
-      if (!data) return;
+      if (!data) {
+        config = { ...config, teamEmail: 'imastik.co@gmail.com', hasTeamEmail: true };
+        return;
+      }
       config = { ...config, ...data };
       if (config.orderMode === 'server') {
         if (submitBtnText) submitBtnText.textContent = 'SEND MY ORDER';
@@ -123,7 +126,8 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       }
     })
     .catch(() => {
-      // Fallback to default mailto config when offline
+      // Static-host / offline fallback uses imastik team email
+      config = { ...config, teamEmail: 'imastik.co@gmail.com', hasTeamEmail: true };
     });
 
   // --- Quantity & pricing ---
@@ -761,5 +765,9 @@ export function initOrderForm({ reducedMotion = false } = {}) {
 
   storePickClear?.addEventListener('click', clearStoreSelection);
 
-  return { setQuantity, selectStoreDesign };
+  function addExternalPhotos(fileList) {
+    addPhotos(Array.from(fileList || []));
+  }
+
+  return { setQuantity, selectStoreDesign, addExternalPhotos };
 }

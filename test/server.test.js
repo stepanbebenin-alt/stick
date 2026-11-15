@@ -49,7 +49,7 @@ test('pricing formula calculates expected euro amounts and clamps bounds', () =>
   assert.equal(clampQuantity(250), 200);
 });
 
-test('GET /health and GET / serve imastik app without Playground and with 3 order CTAs', async () => {
+test('GET /health and GET / serve rebuilt imastik app with Playground, logo, and fixed ordering system', async () => {
   const srv = await startTestServer({ teamEmail: 'team@imastik.lt', orderMode: 'mailto' });
   try {
     const healthRes = await fetch(`${srv.baseUrl}/health`);
@@ -72,26 +72,38 @@ test('GET /health and GET / serve imastik app without Playground and with 3 orde
     assert.match(html, /\/images\/imastik-icon\.png/);
     assert.match(html, /imastik\.co@gmail\.com/);
     assert.match(html, /instagram\.com\/imastik\.co/);
-    assert.match(html, /id="siteStickerLayer"/);
-    assert.match(html, /id="addPageSticker"/);
+    assert.match(html, /class="hero-ornaments"/);
+    assert.match(html, /id="why-sticky"/);
+    assert.match(html, /id="stick-anywhere"/);
+    assert.match(html, /id="prices"/);
+    assert.match(html, /id="play"/);
+    assert.match(html, /id="stage"/);
+    assert.match(html, /id="photoEditor"/);
+    assert.match(html, /id="story"/);
     assert.match(html, /id="orderForm"/);
-    assert.match(html, /id="store"/);
-    assert.match(html, /id="storeGrid"/);
-    assert.match(html, /id="storePickBanner"/);
-    assert.match(html, /name="store_permission"/);
     assert.match(html, /id="napkinCanvas"/);
     assert.match(html, /id="sketchExpand"/);
     assert.match(html, /id="napkinCanvasFull"/);
     assert.match(html, /id="voiceToggle"/);
-    assert.doesNotMatch(html, /id="stage"/);
     assert.doesNotMatch(html, /YOUR-TEAM-EMAIL@example\.com/);
+    assert.doesNotMatch(html, /STICKY CLUB/);
+    assert.doesNotMatch(html, /<script(?![^>]*\bsrc=)/i);
 
-    // Verify section order: idea -> store -> process+pricing -> team -> order form
-    const storeIdx = html.indexOf('id="store"');
+    // Verify section order: why -> everyday uses -> pricing -> playground -> team -> order form
+    const whyIdx = html.indexOf('id="why-sticky"');
+    const usesIdx = html.indexOf('id="stick-anywhere"');
     const pricesIdx = html.indexOf('id="prices"');
+    const playIdx = html.indexOf('id="play"');
     const storyIdx = html.indexOf('id="story"');
     const orderIdx = html.indexOf('id="order"');
-    assert.ok(storeIdx > 0 && pricesIdx > storeIdx && storyIdx > pricesIdx && orderIdx > storyIdx);
+    assert.ok(
+      whyIdx > 0 &&
+        usesIdx > whyIdx &&
+        pricesIdx > usesIdx &&
+        playIdx > pricesIdx &&
+        storyIdx > playIdx &&
+        orderIdx > storyIdx,
+    );
   } finally {
     await srv.close();
   }
