@@ -256,6 +256,24 @@ test('ORDER_MODE=auto resolves to mailto without transport and switches to auto-
   } finally {
     await webhookSrv.close();
   }
+
+  // Non-JSON 200 HTML response (e.g., Google login redirect when Apps Script access != Anyone) must NOT report emailSent=true
+  const htmlLoginSrv = await startTestServer({
+    orderMode: 'server',
+    gmailWebhookUrl: 'https://script.google.com/macros/s/test-deploy/exec',
+    mailFetch: async () => new Response('<html><body>Sign in</body></html>', { status: 200 }),
+  });
+  try {
+    const fd = new FormData();
+    fd.set('name', 'Test');
+    fd.set('email', 'test@example.com');
+    const res = await fetch(`${htmlLoginSrv.baseUrl}/api/orders`, { method: 'POST', body: fd });
+    const data = await res.json();
+    assert.equal(res.status, 201);
+    assert.equal(data.emailSent, false);
+  } finally {
+    await htmlLoginSrv.close();
+  }
 });
 
 test('Brevo mail failure still preserves order safely on server and respects attachment byte caps', async () => {

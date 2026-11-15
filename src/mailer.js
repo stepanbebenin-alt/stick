@@ -231,8 +231,8 @@ async function sendViaGmailWebhook({ cfg, record, content, attached, fetchImpl }
     parsed = null;
   }
 
-  if (!res.ok || parsed?.ok === false) {
-    throw new Error(parsed?.error || `Gmail webhook HTTP ${res.status}`);
+  if (!res.ok || parsed?.ok !== true) {
+    throw new Error(parsed?.error || `Gmail webhook HTTP ${res.status} (unexpected response)`);
   }
 
   return { messageId: parsed?.messageId || null };
