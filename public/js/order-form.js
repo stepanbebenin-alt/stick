@@ -36,7 +36,6 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   const totalEl = document.getElementById('total');
   const summaryLabel = document.getElementById('studioSummaryLabel');
   const summaryPrice = document.getElementById('studioSummaryPrice');
-  const priceCards = document.querySelectorAll('.pricecard[data-quantity]');
   const packPills = document.querySelectorAll('.pack-pill[data-pack]');
 
   const progressBar = document.getElementById('studioProgressBar');
@@ -65,6 +64,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
 
   const sketchModal = document.getElementById('sketchModal');
   const napkinCanvasFull = document.getElementById('napkinCanvasFull');
+  const sketchModalRotateBtn = document.getElementById('sketchModalRotate');
   const sketchModalUndoBtn = document.getElementById('sketchModalUndo');
   const sketchModalClearBtn = document.getElementById('sketchModalClear');
   const sketchModalDoneBtn = document.getElementById('sketchModalDone');
@@ -162,15 +162,6 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     }
     if (summaryPrice) summaryPrice.textContent = totalFormatted;
 
-    priceCards.forEach((card) => {
-      const cardQty = Number.parseInt(card.dataset.quantity || '5', 10);
-      const selected =
-        (cardQty === 5 && qty < 10) ||
-        (cardQty === 10 && qty >= 10 && qty < 20) ||
-        (cardQty === 20 && qty >= 20);
-      card.classList.toggle('is-selected', selected);
-    });
-
     packPills.forEach((pill) => {
       const packQty = Number.parseInt(pill.dataset.pack || '5', 10);
       pill.classList.toggle('is-active', qty === packQty);
@@ -188,16 +179,6 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     pill.addEventListener('click', () => {
       setQuantity(Number.parseInt(pill.dataset.pack || '5', 10));
     });
-  });
-
-  priceCards.forEach((card) => {
-    const select = () => {
-      setQuantity(Number.parseInt(card.dataset.quantity || '5', 10));
-      document.getElementById('order')?.scrollIntoView({
-        behavior: reducedMotion ? 'instant' : 'smooth',
-      });
-    };
-    card.addEventListener('click', select);
   });
 
   setQuantity(MIN_QUANTITY);
@@ -397,13 +378,107 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   });
 
   // --- Napkin Sketch Canvas (inline + fullscreen modal) ---
-  function createSketchSurface(canvas, strokeWidth) {
+  let inlineDirty = false;
+  let modalHasSketch = false;
+  let modalRotatedLandscape = false;
+  let modalDesktopPortrait = false;
+  const sketchStage = napkinCanvasFull?.closest('.sketch-modal-stage') || null;
+  const isModalRotated = () => Boolean(sketchModal?.classList.contains('is-rotated'));
+
+  function getInkBounds(sourceCanvas) {
+    const sourceCtx = sourceCanvas?.getContext('2d');
+    if (!sourceCanvas || !sourceCtx || !sourceCanvas.width || !sourceCanvas.height) return null;
+    const { width, height } = sourceCanvas;
+    const { data } = sourceCtx.getImageData(0, 0, width, height);
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+
+    for (let y = 0; y < height; y++) {
+      const rowOffset = y * width * 4;
+      for (let x = 0; x < width; x++) {
+        const i = rowOffset + x * 4;
+        if (data[i] < 248 || data[i + 1] < 245 || data[i + 2] < 235) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+
+    if (maxX < minX || maxY < minY) return null;
+    const pad = 3;
+    const x = Math.max(0, minX - pad);
+    const y = Math.max(0, minY - pad);
+    const right = Math.min(width - 1, maxX + pad);
+    const bottom = Math.min(height - 1, maxY + pad);
+    return {
+      x,
+      y,
+      w: right - x + 1,
+      h: bottom - y + 1,
+    };
+  }
+
+  function drawCanvasFitted(ctx, targetW, targetH, sourceCanvas) {
+    ctx.fillStyle = '#fffdf5';
+    ctx.fillRect(0, 0, targetW, targetH);
+    if (!sourceCanvas || !sourceCanvas.width || !sourceCanvas.height) return;
+    const fit = Math.min(targetW / sourceCanvas.width, targetH / sourceCanvas.height);
+    const drawW = sourceCanvas.width * fit;
+    const drawH = sourceCanvas.height * fit;
+    const dx = (targetW - drawW) / 2;
+    const dy = (targetH - drawH) / 2;
+    ctx.drawImage(sourceCanvas, 0, 0, sourceCanvas.width, sourceCanvas.height, dx, dy, drawW, drawH);
+  }
+
+  function drawInkPreserved(
+    ctx,
+    targetW,
+    targetH,
+    sourceCanvas,
+    { sourceScale = 1, targetScale = 1, margin = 8 } = {},
+  ) {
+    ctx.fillStyle = '#fffdf5';
+    ctx.fillRect(0, 0, targetW, targetH);
+    if (!sourceCanvas || !sourceCanvas.width || !sourceCanvas.height) return;
+
+    if (targetW === sourceCanvas.width && targetH === sourceCanvas.height && Math.abs(targetScale - sourceScale) < 0.001) {
+      ctx.drawImage(sourceCanvas, 0, 0);
+      return;
+    }
+
+    const bounds = getInkBounds(sourceCanvas);
+    if (!bounds) return;
+
+    const unitRatio = sourceScale > 0 ? targetScale / sourceScale : 1;
+    const naturalW = bounds.w * unitRatio;
+    const naturalH = bounds.h * unitRatio;
+    const pad = Math.min(margin, Math.floor(Math.min(targetW, targetH) * 0.08));
+    const availW = Math.max(1, targetW - pad * 2);
+    const availH = Math.max(1, targetH - pad * 2);
+    const fit = Math.min(1, availW / naturalW, availH / naturalH);
+
+    const drawW = naturalW * fit;
+    const drawH = naturalH * fit;
+    const dx = (targetW - drawW) / 2;
+    const dy = (targetH - drawH) / 2;
+    ctx.drawImage(sourceCanvas, bounds.x, bounds.y, bounds.w, bounds.h, dx, dy, drawW, drawH);
+  }
+
+  function createSketchSurface(canvas, strokeCssWidth, { onStrokeStart, onUndo, onClear, isRotated } = {}) {
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return null;
 
     const undoStack = [];
     let drawing = false;
     let last = null;
+    let currentDpr = 1;
+    let masterCanvas = null;
+    let masterDpr = 1;
+    let snapshotDirty = false;
 
     const fillBg = () => {
       ctx.fillStyle = '#fffdf5';
@@ -418,11 +493,24 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       });
     };
 
+    const getStrokeScale = () => {
+      if (canvas.clientWidth > 0) return canvas.width / canvas.clientWidth;
+      const r = canvas.getBoundingClientRect();
+      const visualW = isRotated?.() ? r.height : r.width;
+      return visualW > 0 ? canvas.width / visualW : 1;
+    };
+
     const getPoint = (e) => {
       const r = canvas.getBoundingClientRect();
+      if (isRotated?.()) {
+        return {
+          x: r.height > 0 ? ((e.clientY - r.top) * canvas.width) / r.height : 0,
+          y: r.width > 0 ? ((r.right - e.clientX) * canvas.height) / r.width : 0,
+        };
+      }
       return {
-        x: ((e.clientX - r.left) * canvas.width) / r.width,
-        y: ((e.clientY - r.top) * canvas.height) / r.height,
+        x: r.width > 0 ? ((e.clientX - r.left) * canvas.width) / r.width : 0,
+        y: r.height > 0 ? ((e.clientY - r.top) * canvas.height) / r.height : 0,
       };
     };
 
@@ -434,10 +522,17 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       pushUndo();
       drawing = true;
       hasSketch = true;
+      snapshotDirty = true;
+      onStrokeStart?.();
       last = getPoint(e);
-      canvas.setPointerCapture(e.pointerId);
+      try {
+        canvas.setPointerCapture(e.pointerId);
+      } catch {
+        // Ignore if pointer capture is unsupported on synthetic pointer events
+      }
+      const lineWidth = strokeCssWidth * getStrokeScale();
       ctx.beginPath();
-      ctx.arc(last.x, last.y, strokeWidth * 0.52, 0, Math.PI * 2);
+      ctx.arc(last.x, last.y, lineWidth * 0.52, 0, Math.PI * 2);
       ctx.fillStyle = sketchColor;
       ctx.fill();
     });
@@ -445,11 +540,13 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     canvas.addEventListener('pointermove', (e) => {
       if (!drawing) return;
       e.preventDefault();
+      snapshotDirty = true;
       const p = getPoint(e);
+      const lineWidth = strokeCssWidth * getStrokeScale();
       ctx.beginPath();
       ctx.moveTo(last.x, last.y);
       ctx.lineTo(p.x, p.y);
-      ctx.lineWidth = strokeWidth;
+      ctx.lineWidth = lineWidth;
       ctx.strokeStyle = sketchColor;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
@@ -466,21 +563,79 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     return {
       canvas,
       ctx,
+      fillBg,
+      isDrawing() {
+        return drawing;
+      },
+      resetHistory() {
+        undoStack.length = 0;
+      },
       pushUndo,
       undo() {
         const snap = undoStack.pop();
         if (!snap) return;
         ctx.putImageData(snap.image, 0, 0);
         hasSketch = snap.hadSketch;
+        snapshotDirty = true;
+        onUndo?.(snap.hadSketch);
       },
       clear() {
         pushUndo();
         fillBg();
         hasSketch = false;
+        masterCanvas = null;
+        snapshotDirty = false;
+        onClear?.();
       },
-      copyFrom(sourceCanvas) {
-        fillBg();
-        ctx.drawImage(sourceCanvas, 0, 0, canvas.width, canvas.height);
+      copyFrom(sourceCanvas, sourceScale = 1, targetScale = currentDpr) {
+        masterCanvas = null;
+        snapshotDirty = true;
+        drawInkPreserved(ctx, canvas.width, canvas.height, sourceCanvas, {
+          sourceScale,
+          targetScale,
+        });
+      },
+      getDpr() {
+        return currentDpr;
+      },
+      resizeTo(cssWidth, cssHeight, dpr = 1, preserveContent = true) {
+        const targetW = Math.max(1, Math.round(cssWidth * dpr));
+        const targetH = Math.max(1, Math.round(cssHeight * dpr));
+        if (targetW === canvas.width && targetH === canvas.height && currentDpr === dpr) return false;
+
+        if (preserveContent && hasSketch) {
+          if (snapshotDirty || !masterCanvas) {
+            masterCanvas = document.createElement('canvas');
+            masterCanvas.width = canvas.width;
+            masterCanvas.height = canvas.height;
+            masterCanvas.getContext('2d')?.drawImage(canvas, 0, 0);
+            masterDpr = currentDpr;
+            snapshotDirty = false;
+          }
+        } else {
+          masterCanvas = null;
+          snapshotDirty = false;
+        }
+
+        canvas.width = targetW;
+        canvas.height = targetH;
+        currentDpr = dpr;
+        undoStack.length = 0;
+        if (preserveContent && hasSketch && masterCanvas) {
+          const sameOrientation =
+            (masterCanvas.width >= masterCanvas.height) === (canvas.width >= canvas.height);
+          if (sameOrientation) {
+            drawCanvasFitted(ctx, canvas.width, canvas.height, masterCanvas);
+          } else {
+            drawInkPreserved(ctx, canvas.width, canvas.height, masterCanvas, {
+              sourceScale: masterDpr,
+              targetScale: dpr,
+            });
+          }
+        } else {
+          fillBg();
+        }
+        return true;
       },
     };
   }
@@ -492,8 +647,41 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     });
   }
 
-  const inlineSurface = createSketchSurface(napkinCanvas, 4.6);
-  const fullSurface = createSketchSurface(napkinCanvasFull, 9.2);
+  const inlineSurface = createSketchSurface(napkinCanvas, 3.2, {
+    onStrokeStart: () => {
+      inlineDirty = true;
+    },
+    onUndo: (restoredHadSketch) => {
+      inlineDirty = true;
+      if (!restoredHadSketch) modalHasSketch = false;
+    },
+    onClear: () => {
+      inlineDirty = false;
+      modalHasSketch = false;
+    },
+  });
+
+  const fullSurface = createSketchSurface(napkinCanvasFull, 4, {
+    isRotated: isModalRotated,
+    onStrokeStart: () => {
+      modalHasSketch = true;
+      inlineDirty = false;
+    },
+    onUndo: (restoredHadSketch) => {
+      modalHasSketch = restoredHadSketch;
+    },
+    onClear: () => {
+      modalHasSketch = false;
+      inlineDirty = false;
+    },
+  });
+
+  function getExportCanvas() {
+    if (modalHasSketch && !inlineDirty && napkinCanvasFull) {
+      return napkinCanvasFull;
+    }
+    return napkinCanvas;
+  }
 
   if (inlineSurface) {
     [...penButtons, ...penButtonsModal].forEach((btn) => {
@@ -503,15 +691,53 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     sketchUndoBtn?.addEventListener('click', () => inlineSurface.undo());
     sketchClearBtn?.addEventListener('click', () => inlineSurface.clear());
     sketchSaveLink?.addEventListener('click', (e) => {
-      e.currentTarget.href = napkinCanvas.toDataURL('image/png');
+      const targetCanvas = getExportCanvas();
+      if (targetCanvas) e.currentTarget.href = targetCanvas.toDataURL('image/png');
     });
   }
+
+  function applyModalOrientation() {
+    if (!sketchModal) return;
+    const vw = document.documentElement.clientWidth || window.innerWidth;
+    const vh = document.documentElement.clientHeight || window.innerHeight;
+    const portraitViewport = vh > vw;
+    const activeRotated = portraitViewport && modalRotatedLandscape;
+    const activeDesktopPortrait = !portraitViewport && modalDesktopPortrait;
+
+    if (portraitViewport) {
+      sketchModal.style.setProperty('--modal-rot-w', `${vh}px`);
+      sketchModal.style.setProperty('--modal-rot-h', `${vw}px`);
+    } else {
+      sketchModal.style.removeProperty('--modal-rot-w');
+      sketchModal.style.removeProperty('--modal-rot-h');
+    }
+
+    sketchModal.classList.toggle('is-rotated', activeRotated);
+    sketchStage?.classList.toggle('is-portrait-stage', activeDesktopPortrait);
+    if (sketchModalRotateBtn) {
+      const active = activeRotated || activeDesktopPortrait;
+      sketchModalRotateBtn.classList.toggle('is-active', active);
+      sketchModalRotateBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    }
+  }
+
+  function syncFullCanvasSize({ preserve = true } = {}) {
+    if (!sketchStage || !fullSurface || !sketchModal || sketchModal.classList.contains('hidden')) return;
+    const cw = sketchStage.clientWidth;
+    const ch = sketchStage.clientHeight;
+    if (cw < 1 || ch < 1) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    fullSurface.resizeTo(cw, ch, dpr, preserve);
+  }
+
+  const getInlineScale = () =>
+    napkinCanvas && napkinCanvas.clientWidth > 0 ? napkinCanvas.width / napkinCanvas.clientWidth : 1;
 
   function closeSketchModal() {
     if (!sketchModal || sketchModal.classList.contains('hidden')) return;
     if (inlineSurface && fullSurface) {
       inlineSurface.pushUndo();
-      inlineSurface.copyFrom(fullSurface.canvas);
+      inlineSurface.copyFrom(fullSurface.canvas, fullSurface.getDpr(), getInlineScale());
     }
     sketchModal.classList.add('hidden');
     document.body.style.overflow = '';
@@ -519,9 +745,49 @@ export function initOrderForm({ reducedMotion = false } = {}) {
 
   if (sketchModal && fullSurface && inlineSurface) {
     sketchExpandBtn?.addEventListener('click', () => {
-      fullSurface.copyFrom(inlineSurface.canvas);
+      const shouldCopyInline = !hasSketch || inlineDirty || !modalHasSketch;
       sketchModal.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
+      applyModalOrientation();
+      syncFullCanvasSize({ preserve: !shouldCopyInline });
+      if (shouldCopyInline) {
+        fullSurface.resetHistory();
+        if (hasSketch) {
+          fullSurface.copyFrom(inlineSurface.canvas, getInlineScale(), fullSurface.getDpr());
+        } else {
+          fullSurface.fillBg();
+        }
+        inlineDirty = false;
+      }
+    });
+
+    sketchModalRotateBtn?.addEventListener('click', () => {
+      const vw = document.documentElement.clientWidth || window.innerWidth;
+      const vh = document.documentElement.clientHeight || window.innerHeight;
+      if (vh > vw) {
+        modalRotatedLandscape = !modalRotatedLandscape;
+      } else {
+        modalDesktopPortrait = !modalDesktopPortrait;
+      }
+      applyModalOrientation();
+      syncFullCanvasSize({ preserve: true });
+    });
+
+    if (typeof ResizeObserver === 'function' && sketchStage) {
+      const ro = new ResizeObserver(() => {
+        if (!sketchModal.classList.contains('hidden') && !fullSurface.isDrawing()) {
+          applyModalOrientation();
+          syncFullCanvasSize({ preserve: true });
+        }
+      });
+      ro.observe(sketchStage);
+    }
+
+    window.addEventListener('resize', () => {
+      if (!sketchModal.classList.contains('hidden') && !fullSurface.isDrawing()) {
+        applyModalOrientation();
+        syncFullCanvasSize({ preserve: true });
+      }
     });
 
     sketchModalUndoBtn?.addEventListener('click', () => fullSurface.undo());
@@ -536,9 +802,10 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   }
 
   function getSketchBlob() {
-    if (!napkinCanvas || !hasSketch) return Promise.resolve(null);
+    const exportCanvas = getExportCanvas();
+    if (!exportCanvas || !hasSketch) return Promise.resolve(null);
     return new Promise((resolve) => {
-      napkinCanvas.toBlob((blob) => resolve(blob), 'image/png');
+      exportCanvas.toBlob((blob) => resolve(blob), 'image/png');
     });
   }
 
@@ -621,10 +888,11 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     const downloads = document.createElement('div');
     downloads.className = 'result-downloads';
 
-    if (hasSketch && napkinCanvas) {
+    const exportCanvas = getExportCanvas();
+    if (hasSketch && exportCanvas) {
       const a = document.createElement('a');
       a.className = 'result-btn';
-      a.href = napkinCanvas.toDataURL('image/png');
+      a.href = exportCanvas.toDataURL('image/png');
       a.download = 'imastik-sketch.png';
       a.textContent = 'Download Sketch PNG';
       downloads.appendChild(a);

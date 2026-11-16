@@ -1,9 +1,7 @@
-import { initOrderForm } from './order-form.js?v=7';
-import { initPlayground } from './playground.js?v=7';
-import { initStarCursor } from './star-cursor.js?v=7';
+import { initOrderForm } from './order-form.js?v=13';
+import { initStarCursor } from './star-cursor.js?v=13';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 // Scroll reading progress bar + sticky header elevation
 const progressBar = document.querySelector('#readingProgress span');
@@ -91,24 +89,6 @@ if ('IntersectionObserver' in window && !reducedMotion) {
   revealTargets.forEach((el) => el.classList.add('in-view'));
 }
 
-// Gentle desktop tilt on cards
-if (finePointer && !reducedMotion) {
-  document.querySelectorAll('.team-person, .pricecard').forEach((el) => {
-    el.addEventListener('pointermove', (e) => {
-      const r = el.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      el.style.transform = `perspective(700px) rotateY(${(x * 4).toFixed(2)}deg) rotateX(${(-y * 4).toFixed(2)}deg) translateY(-4px)`;
-    });
-    el.addEventListener('pointerleave', () => {
-      el.style.transform = '';
-    });
-  });
-}
-
-// Initialize Order Form, Interactive Sticker Playground & Smiley Star Cursor
-const orderApi = initOrderForm({ reducedMotion });
-initPlayground({
-  onAttachToOrder: (file) => orderApi?.addExternalPhotos?.([file]),
-});
+// Initialize Order Form & Smiley Star Cursor
+initOrderForm({ reducedMotion });
 initStarCursor();

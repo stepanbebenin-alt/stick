@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700;800&family=Fredoka:wght@600;700&family=Playfair+Display:ital,wght@1,700&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="/css/styles.css?v=7" />
+  <link rel="stylesheet" href="/css/styles.css?v=13" />
 </head>
 <body>
   <header id="siteHeader">
@@ -26,8 +26,6 @@
     <nav aria-label="Primary navigation">
       <a href="#why-sticky">Why imastik</a>
       <a href="#prices">Prices</a>
-      <a href="#play">Playground</a>
-      <a href="#story">Our team</a>
       <a class="nav-cta" href="#order">Order</a>
     </nav>
   </header>
@@ -106,63 +104,86 @@
           We turn your ideas into custom sticker designs and handle the printing too. One creative team, one simple
           order — no design skills needed.
         </p>
-      </div>
-    </section>
 
-    <section class="stick-uses" id="stick-anywhere">
-      <div class="use-inner">
-        <div class="use-top">
-          <span class="eyebrow">STICKERS FOR YOUR EVERYDAY THINGS</span>
-          <h2>WHERE WILL YOU<br /><em>STICK YOURS?</em></h2>
-        </div>
-
-        <div class="use-grid">
-          <div class="use-item" data-reveal>
-            <span class="use-emoji" aria-hidden="true">
-              <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewBox="0 0 48 48">
-                <rect height="28" rx="3" width="40" x="4" y="5" />
-                <path d="M2 39h44l-3 5H5z" />
-                <path d="m20 13 3 6 7-2-4 6 4 6-7-2-3 6-3-6-7 2 4-6-4-6 7 2z" />
+        <figure class="process-diagram" aria-label="How imastik works in 4 steps">
+          <div class="process-node" data-reveal>
+            <div class="node-badge node-yellow" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 44h20M25 50h14" />
+                <path d="M32 10a16 16 0 0 0-10 28.5c2 1.7 3 3.5 3.4 5.5h13.2c.4-2 1.4-3.8 3.4-5.5A16 16 0 0 0 32 10Z" fill="#fffdf6" />
+                <path d="M28 32c1.2-3 2.5-6 4-6s2.8 3 4 6" stroke="#c8256a" />
+                <path d="M32 4v3M12 14l2.5 2M52 14l-2.5 2M8 28h3M53 28h3" />
               </svg>
-            </span>
-            <strong>LAPTOP</strong>
-            <small>Make your workspace yours</small>
+            </div>
+            <span class="node-step">01 · YOUR IDEA</span>
+            <h3>Share your idea</h3>
+            <p>Write a quick note, upload photos, record a voice memo, or doodle a napkin sketch.</p>
           </div>
 
-          <div class="use-item" data-reveal>
-            <span class="use-emoji" aria-hidden="true">
-              <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewBox="0 0 48 48">
-                <rect height="44" rx="6" width="24" x="12" y="2" />
-                <circle cx="20" cy="10" r="3" />
-                <path d="m25 22 2 5 5 1-4 3 1 5-4-3-4 3 1-5-4-3 5-1z" />
-              </svg>
-            </span>
-            <strong>PHONE CASE</strong>
-            <small>Carry your personality</small>
+          <div class="flow-arrow" aria-hidden="true">
+            <svg viewBox="0 0 68 32" fill="none">
+              <path d="M4 21C22 5 44 5 62 19" stroke="#19251e" stroke-width="2.4" stroke-dasharray="5 5" stroke-linecap="round" />
+              <path d="M54 21l9-1-2-9" stroke="#19251e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </div>
 
-          <div class="use-item" data-reveal>
-            <span class="use-emoji" aria-hidden="true">
-              <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewBox="0 0 48 48">
-                <rect height="40" rx="3" width="29" x="10" y="4" />
-                <path d="M17 4v40M22 15h11M22 22h9M22 29h11" />
+          <div class="process-node" data-reveal>
+            <div class="node-badge node-pink" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m32 11 5.8 12.6 13.7 1.6-10.2 9.4 2.7 13.6L32 41.4l-12 6.8 2.7-13.6-10.2-9.4 13.7-1.6Z" fill="#ffe04a" />
+                <circle cx="27.5" cy="29.5" r="1.6" fill="currentColor" stroke="none" />
+                <circle cx="36.5" cy="29.5" r="1.6" fill="currentColor" stroke="none" />
+                <path d="M27.5 34.5q4.5 3.6 9 0" />
+                <path d="M49 9l1.8 4 4 1.8-4 1.8-1.8 4-1.8-4-4-1.8 4-1.8Z" fill="#c8256a" stroke="none" />
               </svg>
-            </span>
-            <strong>NOTEBOOK</strong>
-            <small>Give your pages character</small>
+            </div>
+            <span class="node-step">02 · OUR DESIGN</span>
+            <h3>We design it</h3>
+            <p>Our designer crafts custom sticker artwork and emails you a preview first.</p>
           </div>
 
-          <div class="use-item" data-reveal>
-            <span class="use-emoji" aria-hidden="true">
-              <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewBox="0 0 48 48">
-                <path d="M24 43S5 31 5 17a10 10 0 0 1 19-4 10 10 0 0 1 19 4c0 14-19 26-19 26z" />
-                <path d="m24 19 2 5 5 1-5 2-2 5-2-5-5-2 5-1z" />
-              </svg>
-            </span>
-            <strong>ANYTHING YOU LOVE</strong>
-            <small>Decorate whatever feels like you</small>
+          <div class="flow-arrow" aria-hidden="true">
+            <svg viewBox="0 0 68 32" fill="none">
+              <path d="M4 11C22 27 44 27 62 13" stroke="#19251e" stroke-width="2.4" stroke-dasharray="5 5" stroke-linecap="round" />
+              <path d="M54 11l9 1-2 9" stroke="#19251e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </div>
-        </div>
+
+          <div class="process-node" data-reveal>
+            <div class="node-badge node-paper" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="16" width="38" height="30" rx="6" fill="#fffdf6" />
+                <path d="m11 19 17 12 17-12" />
+                <circle cx="46" cy="40" r="12" fill="#ffe04a" />
+                <path d="m40.5 40 3.8 3.8 7.5-7.6" stroke-width="2.8" />
+              </svg>
+            </div>
+            <span class="node-step">03 · REVIEW FIRST</span>
+            <h3>Approve &amp; pay</h3>
+            <p>Pay €0 upfront — only pay via Revolut, transfer, or cash once you love the preview.</p>
+          </div>
+
+          <div class="flow-arrow" aria-hidden="true">
+            <svg viewBox="0 0 68 32" fill="none">
+              <path d="M4 21C22 5 44 5 62 19" stroke="#19251e" stroke-width="2.4" stroke-dasharray="5 5" stroke-linecap="round" />
+              <path d="M54 21l9-1-2-9" stroke="#19251e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+
+          <div class="process-node" data-reveal>
+            <div class="node-badge node-yellow-soft" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="16" y="12" width="34" height="36" rx="7" transform="rotate(6 33 30)" fill="#ff9fc6" />
+                <path d="M16 14h26a6 6 0 0 1 6 6v17l-12 12H16a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6Z" fill="#fffdf6" />
+                <path d="M48 37H39a3 3 0 0 0-3 3v9l12-12Z" fill="#ffe04a" />
+                <path d="m26 24 2.1 4.4 4.9.7-3.6 3.4.9 4.8-4.3-2.4-4.3 2.4.9-4.8-3.6-3.4 4.9-.7Z" fill="#c8256a" stroke="none" />
+              </svg>
+            </div>
+            <span class="node-step">04 · YOUR STICKERS</span>
+            <h3>Printed &amp; yours</h3>
+            <p>We print your pack of 5, 10, or 20+ die-cut copies ready to peel and stick.</p>
+          </div>
+        </figure>
       </div>
     </section>
 
@@ -180,41 +201,23 @@
         </div>
 
         <div class="pricegrid">
-          <button
-            type="button"
-            class="pricecard is-selected"
-            data-quantity="5"
-            aria-label="Select 5 sticker copies of 1 custom design for €5 in order form"
-          >
+          <div class="pricecard">
             <span class="price-kicker">5 COPIES · 1 DESIGN</span>
             <strong>€5</strong>
             <span class="price-desc">5 copies of your custom sticker (€1.00 each).</span>
-            <span class="price-select-hint">SELECT THIS PACK <span class="hint-arrow" aria-hidden="true"></span></span>
-          </button>
+          </div>
 
-          <button
-            type="button"
-            class="pricecard"
-            data-quantity="10"
-            aria-label="Select 10 sticker copies of 1 custom design for €8 in order form"
-          >
+          <div class="pricecard">
             <span class="price-kicker">10 COPIES · 1 DESIGN</span>
             <strong>€8</strong>
             <span class="price-desc">10 copies of your custom sticker (€0.80 each).</span>
-            <span class="price-select-hint">SELECT THIS PACK <span class="hint-arrow" aria-hidden="true"></span></span>
-          </button>
+          </div>
 
-          <button
-            type="button"
-            class="pricecard"
-            data-quantity="20"
-            aria-label="Select 20 sticker copies of 1 custom design for €15 in order form"
-          >
+          <div class="pricecard">
             <span class="price-kicker">20 COPIES · 1 DESIGN</span>
             <strong>€15</strong>
             <span class="price-desc">20 copies of your custom sticker (€0.75 each).</span>
-            <span class="price-select-hint">SELECT THIS PACK <span class="hint-arrow" aria-hidden="true"></span></span>
-          </button>
+          </div>
         </div>
 
         <a class="order-link order-link-price" href="#order">
@@ -229,357 +232,6 @@
           Revolut, bank transfer, or cash is requested only after you approve your preview.
         </p>
       </div>
-    </section>
-
-    <section class="lab pretty-lab" id="play">
-      <div class="pretty-heading">
-        <span class="eyebrow">THE PLAYGROUND / JUST FOR FUN</span>
-        <h2>MAKE IT <em>yours.</em></h2>
-        <p>Try your ideas on the interactive sticker canvas — or leave the design to us.</p>
-      </div>
-
-      <div class="pretty-studio">
-        <div class="pretty-board" id="stage" aria-label="Interactive sticker canvas"></div>
-        <div class="photo-upload-hint">
-          Add as many photos as you like. Each edited photo becomes a sticker — previous ones stay on your canvas.
-        </div>
-
-        <div class="pretty-actions">
-          <button class="pretty-button primary" id="openPhotoPicker" type="button">+ Add photos</button>
-          <input
-            id="photoUpload"
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            multiple
-            aria-label="Choose photos for sticker playground"
-          />
-          <button class="pretty-button" id="add" type="button">Add words</button>
-          <button class="pretty-button" id="surprise" type="button">Mix it up</button>
-          <button class="pretty-button quiet" id="download" type="button">↓ Save PNG</button>
-          <button class="pretty-button done" id="attachToOrder" type="button">Use canvas in order ↗</button>
-        </div>
-
-        <p class="pretty-status" id="photoStatus" aria-live="polite" role="status">
-          Drop photos onto the canvas or tap Add photos to try cutout styles and white borders.
-        </p>
-
-        <div class="simple-photo pretty-photo hidden" id="photoEditor">
-          <div class="pretty-photo-head">
-            <div>
-              <span class="eyebrow">YOUR PHOTO, REIMAGINED</span>
-              <h3>Make it a sticker.</h3>
-            </div>
-          </div>
-
-          <div class="pretty-photo-grid">
-            <div class="pretty-edit">
-              <div class="edit-surface">
-                <canvas id="editCanvas" aria-label="Erase or restore parts of your uploaded photo"></canvas>
-              </div>
-              <div class="pretty-compare">
-                <div class="preview-box">
-                  <b>BEFORE</b>
-                  <img id="beforeImage" alt="Original photo" />
-                </div>
-                <div class="preview-box">
-                  <b>AFTER</b>
-                  <img id="afterImage" alt="Sticker preview" />
-                </div>
-              </div>
-            </div>
-
-            <div class="pretty-edit-tools">
-              <p class="pretty-instruction">Try a cutout, then tidy up the edges with your finger or mouse.</p>
-              <button class="pretty-button primary" id="aiRemove" type="button">Remove background with AI</button>
-
-              <details class="pretty-more">
-                <summary>More ways to edit <span>+</span></summary>
-                <div class="pretty-more-body">
-                  <label>
-                    Brush softness
-                    <input id="brushSoft" type="range" min="0" max="100" value="45" />
-                    <output id="softValue">45%</output>
-                  </label>
-                  <label>
-                    Cutout strength
-                    <input id="photoCutout" type="range" min="5" max="100" value="38" />
-                    <output id="toleranceVal">38</output>
-                  </label>
-                  <label>
-                    Art style
-                    <select id="photoEffect">
-                      <option value="original">Original</option>
-                      <option value="pop">Pop art</option>
-                      <option value="mono">Black &amp; white</option>
-                      <option value="duo">Pink / yellow</option>
-                    </select>
-                  </label>
-                  <label>
-                    White border
-                    <input id="photoBorder" type="range" min="0" max="25" value="10" />
-                    <output id="borderVal">10px</output>
-                  </label>
-                  <button id="resetCutout" type="button">Reset photo</button>
-                  <button id="downloadSticker" type="button">Download sticker PNG</button>
-                </div>
-              </details>
-
-              <details class="manual-edit">
-                <summary>Need to tidy up the edges?</summary>
-                <button class="pretty-button" id="autoCutout" type="button">Quick cutout</button>
-                <div class="pretty-toggle">
-                  <button class="active" id="eraseMode" type="button">Erase</button>
-                  <button id="restoreMode" type="button">Restore</button>
-                </div>
-                <label class="pretty-slider">
-                  Brush size
-                  <input id="brushSize" type="range" min="6" max="110" value="32" />
-                  <output id="brushValue">32</output>
-                </label>
-              </details>
-
-              <button class="pretty-button done" id="addPhoto" type="button">Place on my canvas ↗</button>
-              <p class="pretty-small">
-                AI cutouts need an internet connection. You can always use Quick cutout or Erase/Restore manually.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="pretty-bottom">
-          <details class="playground-options">
-            <summary>Personalise your stickers +</summary>
-            <div class="pretty-text-tools">
-              <label>
-                Write something fun
-                <input id="stickerText" maxlength="35" placeholder="Your words here..." value="GOOD VIBES" />
-              </label>
-              <label>
-                Shape
-                <select id="shape">
-                  <option value="blob">Wobbly</option>
-                  <option value="circle">Round</option>
-                  <option value="square">Square</option>
-                  <option value="star">Star</option>
-                </select>
-              </label>
-              <div class="pretty-colors">
-                <span>Colour</span>
-                <div class="colors" id="swatches"></div>
-              </div>
-            </div>
-
-            <details class="pretty-more pretty-arrange">
-              <summary>Move, resize &amp; tidy up <span>+</span></summary>
-              <div class="pretty-more-body">
-                <label>
-                  Sticker size
-                  <input id="pieceSize" type="range" min="60" max="300" value="160" />
-                </label>
-                <label>
-                  Rotate
-                  <input id="pieceRotate" type="range" min="-180" max="180" value="0" />
-                </label>
-                <div class="pretty-mini-actions">
-                  <button id="duplicatePiece" type="button">Duplicate</button>
-                  <button id="centerPiece" type="button">Centre</button>
-                  <button id="remove" type="button">Remove</button>
-                  <button id="clearBoard" type="button">Clear all</button>
-                </div>
-              </div>
-            </details>
-          </details>
-        </div>
-      </div>
-
-      <p class="pretty-note">This playground is just for fun. Our designer will create or refine the final sticker for you.</p>
-      <a class="playground-order" href="#order">
-        LOVE YOUR IDEA? REQUEST YOUR STICKER
-        <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-        </svg>
-      </a>
-    </section>
-
-    <section class="about team-story" id="story">
-      <div class="team-intro">
-        <div>
-          <span class="eyebrow">THE CREATIVE CREW / SIX OF US</span>
-          <h3>THE FACES <em>behind it.</em></h3>
-        </div>
-        <p>
-          We’re six first-year Business Management and Marketing students turning your ideas into custom stickers. Tap
-          a card to meet us on Instagram.
-        </p>
-      </div>
-
-      <div class="team-people">
-        <a
-          aria-label="Elzė — Instagram"
-          class="team-person"
-          data-reveal
-          href="https://www.instagram.com/elze.ramanauskaite?psln=MTkzNjFuZWF1eXVkcA=="
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <span class="team-avatar avatar-pink">
-            <span class="member-number">01 / 06</span>
-            <span class="team-initial" aria-hidden="true">E</span>
-            <span class="member-stamp">IMASTIK</span>
-          </span>
-          <span class="team-name">
-            Elzė
-            <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-            </svg>
-          </span>
-          <span class="team-handle">@elze.ramanauskaite</span>
-        </a>
-
-        <a
-          aria-label="Linas — Instagram"
-          class="team-person"
-          data-reveal
-          href="https://www.instagram.com/77linas?cplk=MWV5dzhmbWM2dzNsbQ=="
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <span class="team-avatar avatar-yellow">
-            <span class="member-number">02 / 06</span>
-            <span class="team-initial" aria-hidden="true">L</span>
-            <span class="member-stamp">IMASTIK</span>
-          </span>
-          <span class="team-name">
-            Linas
-            <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-            </svg>
-          </span>
-          <span class="team-handle">@77linas</span>
-        </a>
-
-        <a
-          aria-label="Viktorija — Instagram"
-          class="team-person"
-          data-reveal
-          href="https://www.instagram.com/viktorija.drask?mdxt=MXFiNGM5bXJjanV3bw=="
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <span class="team-avatar avatar-blue">
-            <span class="member-number">03 / 06</span>
-            <span class="team-initial" aria-hidden="true">V</span>
-            <span class="member-stamp">IMASTIK</span>
-          </span>
-          <span class="team-name">
-            Viktorija
-            <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-            </svg>
-          </span>
-          <span class="team-handle">@viktorija.drask</span>
-        </a>
-
-        <a
-          aria-label="Syba — Instagram"
-          class="team-person"
-          data-reveal
-          href="https://www.instagram.com/___syba?mdxt=cG10cG5tc2d2YWxo"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <span class="team-avatar avatar-green">
-            <span class="member-number">04 / 06</span>
-            <span class="team-initial" aria-hidden="true">S</span>
-            <span class="member-stamp">IMASTIK</span>
-          </span>
-          <span class="team-name">
-            Syba
-            <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-            </svg>
-          </span>
-          <span class="team-handle">@___syba</span>
-        </a>
-
-        <a
-          aria-label="@ya_stepka — Instagram"
-          class="team-person"
-          data-reveal
-          href="https://www.instagram.com/ya_stepka/"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <span class="team-avatar avatar-pink">
-            <span class="member-number">05 / 06</span>
-            <span class="team-initial" aria-hidden="true">Y</span>
-            <span class="member-stamp">IMASTIK</span>
-          </span>
-          <span class="team-name">
-            @ya_stepka
-            <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-            </svg>
-          </span>
-          <span class="team-handle">Instagram profile</span>
-        </a>
-
-        <a
-          aria-label="@gstankewiciute — Instagram"
-          class="team-person"
-          data-reveal
-          href="https://www.instagram.com/gstankewiciute/"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <span class="team-avatar avatar-yellow">
-            <span class="member-number">06 / 06</span>
-            <span class="team-initial" aria-hidden="true">G</span>
-            <span class="member-stamp">IMASTIK</span>
-          </span>
-          <span class="team-name">
-            @gstankewiciute
-            <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-            </svg>
-          </span>
-          <span class="team-handle">Instagram profile</span>
-        </a>
-      </div>
-
-      <div class="team-design-note">
-        <span class="team-design-symbol" aria-hidden="true"></span>
-        <div>
-          <strong>Have an idea? We’ll make it happen.</strong>
-          <p>
-            Our team works together on your order. Linas handles the graphic design — he has a diploma in graphic design
-            and can create detailed, complex artwork to suit your vision. You bring the idea, and we’ll take it from
-            there.
-          </p>
-          <div class="team-note-links">
-            <a href="https://www.instagram.com/linas.psd" rel="noopener noreferrer" target="_blank">
-              Explore Linas’s design Instagram · @linas.psd
-              <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-              </svg>
-            </a>
-            <a class="team-club-ig" href="https://www.instagram.com/imastik.co" rel="noopener noreferrer" target="_blank">
-              Follow the club Instagram · @imastik.co
-              <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-              </svg>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <p class="team-footnote">Follow the people behind the club · @imastik.co</p>
-      <a class="order-link order-link-team" href="#order">
-        READY TO MAKE SOMETHING? ORDER HERE
-        <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M5 19 19 5M7 5h12v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" />
-        </svg>
-      </a>
     </section>
 
     <section class="order" id="order">
@@ -804,6 +456,13 @@
           <button type="button" class="pen-dot-modal" data-pen="#19201b" style="background:#19201b" aria-label="Black ink pen"></button>
           <button type="button" class="pen-dot-modal" data-pen="#f04a38" style="background:#f04a38" aria-label="Red pen"></button>
         </div>
+        <button class="extra-button sketch-rotate-btn" id="sketchModalRotate" type="button" aria-pressed="false" title="Rotate sketch pad">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-3.2-6.9L21 8" />
+            <path d="M21 3v5h-5" />
+          </svg>
+          <span>Rotate</span>
+        </button>
         <button class="extra-button" id="sketchModalUndo" type="button">Undo</button>
         <button class="extra-button" id="sketchModalClear" type="button">Clear</button>
         <button class="extra-button extra-done" id="sketchModalDone" type="button">Done — use sketch</button>
@@ -821,6 +480,6 @@
     </svg>
   </a>
 
-  <script type="module" src="/js/main.js?v=7"></script>
+  <script type="module" src="/js/main.js?v=13"></script>
 </body>
 </html>

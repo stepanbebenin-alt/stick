@@ -5,13 +5,12 @@ Custom stickers web app rebuilt as a clean Node.js/Express service ready for [Re
 ## Features
 
 - **Render-ready Node.js Web Service** (`server.js`, `render.yaml`, `GET /health` health check, Helmet CSP, gzip compression).
-- **Rebuilt imastik Experience** (`public/index.html`, `public/css/styles.css`, `public/js/`):
+- **Streamlined imastik Experience** (`public/index.html`, `public/css/styles.css`, `public/js/`):
   - Sunny yellow & pink palette + `Fredoka` & `Playfair Display` typography, `imastik` peel-bulb logo, animated hero ornaments (sun orb, orbit star, scribble), and smiley star pointer cursor (automatically pauses for the pencil cursor on sketch canvases)
-  - **Why imastik** (`#why-sticky`) and **Where will you stick yours?** (`#stick-anywhere`) everyday uses grid (`Laptop`, `Phone Case`, `Notebook`, `Anything You Love`)
+  - **Landing Hero** (`#top`) with animated ticker bar
+  - **Your Idea. Our Design. Your Stickers.** (`#why-sticky`) featuring a visual 4-step process infographic (`Share your idea` → `We design it` → `Review & approve` → `Printed & yours`)
   - **Pack Pricing** (`#prices`) with interactive copy-tier cards (`5 copies €5`, `10 copies €8`, `20 copies €15`)
-  - **Interactive Sticker Playground** (`#play`) with draggable stickers, photo cutout studio (quick color cutout, erase/restore brushes, optional AI background removal, white sticker border), PNG download, and 1-click **Use canvas in order**
-  - **Our team** (`#story`) featuring all six club members, `@linas.psd`, and `@imastik.co` Instagram links
-  - **Fixed Order System** (`#order`) with reference image upload, **napkin sketch canvas** (with pencil cursor + expandable full-screen drawing pad), **voice note recorder**, clear pack/payment instructions (`imastik.co@gmail.com`), and **timelapse consent**
+  - **Order System** (`#order`) with reference image upload, **napkin sketch canvas** (with pencil cursor + expandable full-screen drawing pad), **voice note recorder**, clear pack/payment instructions (`imastik.co@gmail.com`), and **timelapse / store consent**
 - **Flexible Order Submission & Auto-Email Delivery**:
   - Uses `ORDER_MODE=auto`: switches automatically to 1-click direct submission (`POST /api/orders` -> automatic email with photo, sketch & voice attachments to `TEAM_EMAIL`) whenever `GMAIL_WEBHOOK_URL`, `BREVO_API_KEY`, or `RESEND_API_KEY` is configured, and safely falls back to `mailto` drafts if no email provider is set yet.
   - Because Render Free blocks outbound SMTP ports (`25`, `465`, `587`), automatic delivery sends over **HTTPS (port 443)** via a ready-to-deploy [`scripts/google-apps-script.gs`](./scripts/google-apps-script.gs) webhook or Brevo / Resend HTTP APIs.

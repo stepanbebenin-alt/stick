@@ -208,13 +208,12 @@ export function createApp(options = {}) {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", 'https://cdn.jsdelivr.net', "'wasm-unsafe-eval'", 'blob:'],
-          workerSrc: ["'self'", 'blob:'],
+          scriptSrc: ["'self'"],
           styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
           fontSrc: ["'self'", 'https://fonts.gstatic.com'],
           imgSrc: ["'self'", 'data:', 'blob:'],
           mediaSrc: ["'self'", 'blob:'],
-          connectSrc: ["'self'", 'https://cdn.jsdelivr.net', 'https://staticimgly.com', 'blob:', 'data:'],
+          connectSrc: ["'self'"],
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           formAction: ["'self'"],

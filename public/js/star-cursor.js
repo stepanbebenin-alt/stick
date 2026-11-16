@@ -1,10 +1,10 @@
 /**
  * Smiley star custom cursor & subtle click confetti for imastik.
- * Automatically pauses over drawing/sketch/cutout canvases so the custom pencil
- * or crosshair cursor shows without overlap or glitching.
+ * Automatically pauses over drawing/sketch canvases so the custom pencil
+ * cursor shows without overlap or glitching.
  */
 
-const CANVAS_ZONE_SELECTOR = 'canvas, .sketch-wrap, .sketch-modal-stage, .edit-surface';
+const CANVAS_ZONE_SELECTOR = 'canvas, .sketch-wrap, .sketch-modal-stage';
 
 export function initStarCursor() {
   const finePointer = window.matchMedia('(pointer: fine)').matches;
@@ -93,8 +93,8 @@ export function initStarCursor() {
   const colors = ['#c8256a', '#f04a38', '#19251e', '#9c1a50'];
   document.addEventListener('click', (e) => {
     const target = e.target instanceof Element ? e.target : null;
-    if (!target || target.closest('input, textarea, select, canvas, #stage, .pretty-board')) return;
-    if (!target.closest('button, a, .pricecard')) return;
+    if (!target || target.closest('input, textarea, select, canvas')) return;
+    if (!target.closest('button, a')) return;
     if (!e.clientX && !e.clientY) return;
 
     for (let i = 0; i < 4; i++) {
