@@ -36,6 +36,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   const totalEl = document.getElementById('total');
   const summaryLabel = document.getElementById('studioSummaryLabel');
   const summaryPrice = document.getElementById('studioSummaryPrice');
+  const priceCards = document.querySelectorAll('.pricecard[data-quantity]');
   const packPills = document.querySelectorAll('.pack-pill[data-pack]');
 
   const progressBar = document.getElementById('studioProgressBar');
@@ -162,6 +163,15 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     }
     if (summaryPrice) summaryPrice.textContent = totalFormatted;
 
+    priceCards.forEach((card) => {
+      const cardQty = Number.parseInt(card.dataset.quantity || '5', 10);
+      const selected =
+        (cardQty === 5 && qty < 10) ||
+        (cardQty === 10 && qty >= 10 && qty < 20) ||
+        (cardQty === 20 && qty >= 20);
+      card.classList.toggle('is-selected', selected);
+    });
+
     packPills.forEach((pill) => {
       const packQty = Number.parseInt(pill.dataset.pack || '5', 10);
       pill.classList.toggle('is-active', qty === packQty);
@@ -179,6 +189,16 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     pill.addEventListener('click', () => {
       setQuantity(Number.parseInt(pill.dataset.pack || '5', 10));
     });
+  });
+
+  priceCards.forEach((card) => {
+    const select = () => {
+      setQuantity(Number.parseInt(card.dataset.quantity || '5', 10));
+      document.getElementById('order')?.scrollIntoView({
+        behavior: reducedMotion ? 'instant' : 'smooth',
+      });
+    };
+    card.addEventListener('click', select);
   });
 
   setQuantity(MIN_QUANTITY);

@@ -50,7 +50,7 @@ test('pricing formula calculates expected euro amounts and clamps bounds', () =>
   assert.equal(clampQuantity(250), 200);
 });
 
-test('GET /health and GET / serve streamlined imastik app with process infographic, pricing, and ordering system', async () => {
+test('GET /health and GET / serve rebuilt imastik app with Playground, logo, and fixed ordering system', async () => {
   const srv = await startTestServer({ teamEmail: 'team@imastik.lt', orderMode: 'mailto' });
   try {
     const healthRes = await fetch(`${srv.baseUrl}/health`);
@@ -75,8 +75,12 @@ test('GET /health and GET / serve streamlined imastik app with process infograph
     assert.match(html, /instagram\.com\/imastik\.co/);
     assert.match(html, /class="hero-ornaments"/);
     assert.match(html, /id="why-sticky"/);
-    assert.match(html, /class="process-diagram"/);
+    assert.match(html, /id="stick-anywhere"/);
     assert.match(html, /id="prices"/);
+    assert.match(html, /id="play"/);
+    assert.match(html, /id="stage"/);
+    assert.match(html, /id="photoEditor"/);
+    assert.match(html, /id="story"/);
     assert.match(html, /id="orderForm"/);
     assert.match(html, /id="napkinCanvas"/);
     assert.match(html, /id="sketchExpand"/);
@@ -85,31 +89,24 @@ test('GET /health and GET / serve streamlined imastik app with process infograph
     assert.match(html, /id="voiceToggle"/);
     assert.match(html, /name="share_permission"/);
     assert.match(html, /name="store_permission"/);
-
-    // Fluff sections removed
-    assert.doesNotMatch(html, /id="stick-anywhere"/);
-    assert.doesNotMatch(html, /id="play"/);
-    assert.doesNotMatch(html, /id="story"/);
-    assert.doesNotMatch(html, /playground\.js/);
-    assert.doesNotMatch(html, /SELECT THIS PACK/);
-    assert.doesNotMatch(html, /class="pricecard[^"]*is-selected"/);
-    assert.doesNotMatch(html, /<button[^>]*pricecard/i);
     assert.doesNotMatch(html, /YOUR-TEAM-EMAIL@example\.com/);
     assert.doesNotMatch(html, /STICKY CLUB/);
     assert.doesNotMatch(html, /<script(?![^>]*\bsrc=)/i);
 
-    // Verify section order: hero -> process diagram -> pricing -> order form
-    const topIdx = html.indexOf('id="top"');
+    // Verify section order: why -> everyday uses -> pricing -> playground -> team -> order form
     const whyIdx = html.indexOf('id="why-sticky"');
-    const infographicIdx = html.indexOf('class="process-diagram"');
+    const usesIdx = html.indexOf('id="stick-anywhere"');
     const pricesIdx = html.indexOf('id="prices"');
+    const playIdx = html.indexOf('id="play"');
+    const storyIdx = html.indexOf('id="story"');
     const orderIdx = html.indexOf('id="order"');
     assert.ok(
-      topIdx > 0 &&
-        whyIdx > topIdx &&
-        infographicIdx > whyIdx &&
-        pricesIdx > infographicIdx &&
-        orderIdx > pricesIdx,
+      whyIdx > 0 &&
+        usesIdx > whyIdx &&
+        pricesIdx > usesIdx &&
+        playIdx > pricesIdx &&
+        storyIdx > playIdx &&
+        orderIdx > storyIdx,
     );
   } finally {
     await srv.close();
