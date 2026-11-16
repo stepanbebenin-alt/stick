@@ -1720,12 +1720,18 @@ footer {
     box-shadow: 5px 6px 0 var(--pink);
   }
 
+  .sketch-modal-bar {
+    font-size: 14px;
+    gap: 6px 10px;
+  }
+
   .sketch-modal-bar .sketch-actions {
-    gap: 6px;
+    gap: 5px;
   }
 
   .sketch-modal-bar .extra-button {
-    padding: 7px 11px;
+    padding: 6px 10px;
+    font-size: 11.5px;
   }
 
   .formgrid input:not([type='file']):not([type='checkbox']),

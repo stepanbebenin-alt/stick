@@ -385,87 +385,33 @@ export function initOrderForm({ reducedMotion = false } = {}) {
   const sketchStage = napkinCanvasFull?.closest('.sketch-modal-stage') || null;
   const isModalRotated = () => Boolean(sketchModal?.classList.contains('is-rotated'));
 
-  function getInkBounds(sourceCanvas) {
-    const sourceCtx = sourceCanvas?.getContext('2d');
-    if (!sourceCanvas || !sourceCtx || !sourceCanvas.width || !sourceCanvas.height) return null;
-    const { width, height } = sourceCanvas;
-    const { data } = sourceCtx.getImageData(0, 0, width, height);
-    let minX = width;
-    let minY = height;
-    let maxX = -1;
-    let maxY = -1;
-
-    for (let y = 0; y < height; y++) {
-      const rowOffset = y * width * 4;
-      for (let x = 0; x < width; x++) {
-        const i = rowOffset + x * 4;
-        if (data[i] < 248 || data[i + 1] < 245 || data[i + 2] < 235) {
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-        }
-      }
-    }
-
-    if (maxX < minX || maxY < minY) return null;
-    const pad = 3;
-    const x = Math.max(0, minX - pad);
-    const y = Math.max(0, minY - pad);
-    const right = Math.min(width - 1, maxX + pad);
-    const bottom = Math.min(height - 1, maxY + pad);
+  function cloneDoc(sourceDoc) {
     return {
-      x,
-      y,
-      w: right - x + 1,
-      h: bottom - y + 1,
+      baseW: Math.max(1, sourceDoc?.baseW || 1),
+      baseH: Math.max(1, sourceDoc?.baseH || 1),
+      strokes: (sourceDoc?.strokes || []).map((s) => ({
+        color: s.color,
+        width: s.width,
+        points: (s.points || []).map((pt) => ({ x: pt.x, y: pt.y })),
+      })),
     };
   }
 
-  function drawCanvasFitted(ctx, targetW, targetH, sourceCanvas) {
-    ctx.fillStyle = '#fffdf5';
-    ctx.fillRect(0, 0, targetW, targetH);
-    if (!sourceCanvas || !sourceCanvas.width || !sourceCanvas.height) return;
-    const fit = Math.min(targetW / sourceCanvas.width, targetH / sourceCanvas.height);
-    const drawW = sourceCanvas.width * fit;
-    const drawH = sourceCanvas.height * fit;
-    const dx = (targetW - drawW) / 2;
-    const dy = (targetH - drawH) / 2;
-    ctx.drawImage(sourceCanvas, 0, 0, sourceCanvas.width, sourceCanvas.height, dx, dy, drawW, drawH);
-  }
-
-  function drawInkPreserved(
-    ctx,
-    targetW,
-    targetH,
-    sourceCanvas,
-    { sourceScale = 1, targetScale = 1, margin = 8 } = {},
-  ) {
-    ctx.fillStyle = '#fffdf5';
-    ctx.fillRect(0, 0, targetW, targetH);
-    if (!sourceCanvas || !sourceCanvas.width || !sourceCanvas.height) return;
-
-    if (targetW === sourceCanvas.width && targetH === sourceCanvas.height && Math.abs(targetScale - sourceScale) < 0.001) {
-      ctx.drawImage(sourceCanvas, 0, 0);
-      return;
+  function getDocBounds(targetDoc) {
+    let minX = 0;
+    let minY = 0;
+    let maxX = Math.max(1, targetDoc.baseW);
+    let maxY = Math.max(1, targetDoc.baseH);
+    for (const s of targetDoc.strokes) {
+      const r = (s.width || 3) * 0.6;
+      for (const pt of s.points) {
+        if (pt.x - r < minX) minX = pt.x - r;
+        if (pt.y - r < minY) minY = pt.y - r;
+        if (pt.x + r > maxX) maxX = pt.x + r;
+        if (pt.y + r > maxY) maxY = pt.y + r;
+      }
     }
-
-    const bounds = getInkBounds(sourceCanvas);
-    if (!bounds) return;
-
-    const unitRatio = sourceScale > 0 ? targetScale / sourceScale : 1;
-    const naturalW = bounds.w * unitRatio;
-    const naturalH = bounds.h * unitRatio;
-    const pad = Math.min(margin, Math.floor(Math.min(targetW, targetH) * 0.08));
-    const availW = Math.max(1, targetW - pad * 2);
-    const availH = Math.max(1, targetH - pad * 2);
-    const fit = Math.min(1, availW / naturalW, availH / naturalH);
-
-    const drawW = naturalW * fit;
-    const drawH = naturalH * fit;
-    const dx = (targetW - drawW) / 2;
-    const dy = (targetH - drawH) / 2;
-    ctx.drawImage(sourceCanvas, bounds.x, bounds.y, bounds.w, bounds.h, dx, dy, drawW, drawH);
+    return { minX, minY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
   }
 
   function createSketchSurface(canvas, strokeCssWidth, { onStrokeStart, onUndo, onClear, isRotated } = {}) {
@@ -474,30 +420,63 @@ export function initOrderForm({ reducedMotion = false } = {}) {
 
     const undoStack = [];
     let drawing = false;
-    let last = null;
+    let activeStroke = null;
     let currentDpr = 1;
-    let masterCanvas = null;
-    let masterDpr = 1;
-    let snapshotDirty = false;
+    let logicalW = Math.max(1, canvas.width || 1);
+    let logicalH = Math.max(1, canvas.height || 1);
+    let doc = { baseW: logicalW, baseH: logicalH, strokes: [] };
+    let activeView = { scale: 1, offsetX: 0, offsetY: 0 };
 
     const fillBg = () => {
       ctx.fillStyle = '#fffdf5';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     };
 
-    const pushUndo = () => {
-      if (undoStack.length >= 20) undoStack.shift();
-      undoStack.push({
-        image: ctx.getImageData(0, 0, canvas.width, canvas.height),
-        hadSketch: hasSketch,
-      });
+    const getVisualSize = () => {
+      if (canvas.clientWidth > 0 && canvas.clientHeight > 0) {
+        return { w: canvas.clientWidth, h: canvas.clientHeight };
+      }
+      const r = canvas.getBoundingClientRect();
+      return isRotated?.() ? { w: r.height, h: r.width } : { w: r.width, h: r.height };
     };
 
-    const getStrokeScale = () => {
-      if (canvas.clientWidth > 0) return canvas.width / canvas.clientWidth;
-      const r = canvas.getBoundingClientRect();
-      const visualW = isRotated?.() ? r.height : r.width;
-      return visualW > 0 ? canvas.width / visualW : 1;
+    const getScreenToLogicalRatio = () => {
+      const vis = getVisualSize();
+      return vis.w > 0 ? logicalW / vis.w : 1;
+    };
+
+    const computeViewTransform = () => {
+      if (doc.strokes.length === 0) {
+        return { scale: 1, offsetX: 0, offsetY: 0 };
+      }
+      const b = getDocBounds(doc);
+      const scale = Math.min(logicalW / b.w, logicalH / b.h);
+      const offsetX = (logicalW - b.w * scale) / 2 - b.minX * scale;
+      const offsetY = (logicalH - b.h * scale) / 2 - b.minY * scale;
+      return { scale, offsetX, offsetY };
+    };
+
+    const getPixelScales = () => ({
+      pxX: logicalW > 0 ? canvas.width / logicalW : 1,
+      pxY: logicalH > 0 ? canvas.height / logicalH : 1,
+    });
+
+    const worldToCanvas = (pt, view) => {
+      const { pxX, pxY } = getPixelScales();
+      return {
+        x: (pt.x * view.scale + view.offsetX) * pxX,
+        y: (pt.y * view.scale + view.offsetY) * pxY,
+      };
+    };
+
+    const canvasToWorld = (cpt, view) => {
+      const { pxX, pxY } = getPixelScales();
+      const lx = pxX > 0 ? cpt.x / pxX : cpt.x;
+      const ly = pxY > 0 ? cpt.y / pxY : cpt.y;
+      return {
+        x: view.scale > 0 ? (lx - view.offsetX) / view.scale : lx,
+        y: view.scale > 0 ? (ly - view.offsetY) / view.scale : ly,
+      };
     };
 
     const getPoint = (e) => {
@@ -514,49 +493,102 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       };
     };
 
+    const redraw = () => {
+      fillBg();
+      activeView = computeViewTransform();
+      if (doc.strokes.length === 0) return;
+      const { pxX } = getPixelScales();
+      for (const s of doc.strokes) {
+        if (!s.points || s.points.length === 0) continue;
+        const lineWidth = Math.max(1.25 * currentDpr, s.width * activeView.scale * pxX);
+        if (s.points.length === 1) {
+          const cp = worldToCanvas(s.points[0], activeView);
+          ctx.beginPath();
+          ctx.arc(cp.x, cp.y, lineWidth * 0.52, 0, Math.PI * 2);
+          ctx.fillStyle = s.color;
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          const first = worldToCanvas(s.points[0], activeView);
+          ctx.moveTo(first.x, first.y);
+          for (let i = 1; i < s.points.length; i++) {
+            const pt = worldToCanvas(s.points[i], activeView);
+            ctx.lineTo(pt.x, pt.y);
+          }
+          ctx.lineWidth = lineWidth;
+          ctx.strokeStyle = s.color;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.stroke();
+        }
+      }
+    };
+
+    const pushUndo = () => {
+      if (undoStack.length >= 40) undoStack.shift();
+      undoStack.push({
+        doc: cloneDoc(doc),
+        hadSketch: hasSketch,
+      });
+    };
+
     fillBg();
 
     canvas.addEventListener('pointerdown', (e) => {
       if (e.button !== 0 && e.pointerType === 'mouse') return;
       e.preventDefault();
       pushUndo();
+      if (doc.strokes.length === 0) {
+        doc.baseW = logicalW;
+        doc.baseH = logicalH;
+      }
+      activeView = computeViewTransform();
       drawing = true;
       hasSketch = true;
-      snapshotDirty = true;
       onStrokeStart?.();
-      last = getPoint(e);
+
+      const cPt = getPoint(e);
+      const wPt = canvasToWorld(cPt, activeView);
+      const logicalLineW = strokeCssWidth * getScreenToLogicalRatio();
+      const worldLineW = activeView.scale > 0 ? logicalLineW / activeView.scale : logicalLineW;
+      activeStroke = { color: sketchColor, width: worldLineW, points: [wPt] };
+      doc.strokes.push(activeStroke);
+
       try {
         canvas.setPointerCapture(e.pointerId);
       } catch {
         // Ignore if pointer capture is unsupported on synthetic pointer events
       }
-      const lineWidth = strokeCssWidth * getStrokeScale();
+      const { pxX } = getPixelScales();
+      const pixelLineW = Math.max(1.25 * currentDpr, worldLineW * activeView.scale * pxX);
       ctx.beginPath();
-      ctx.arc(last.x, last.y, lineWidth * 0.52, 0, Math.PI * 2);
+      ctx.arc(cPt.x, cPt.y, pixelLineW * 0.52, 0, Math.PI * 2);
       ctx.fillStyle = sketchColor;
       ctx.fill();
     });
 
     canvas.addEventListener('pointermove', (e) => {
-      if (!drawing) return;
+      if (!drawing || !activeStroke) return;
       e.preventDefault();
-      snapshotDirty = true;
-      const p = getPoint(e);
-      const lineWidth = strokeCssWidth * getStrokeScale();
+      const cPt = getPoint(e);
+      const prevC = worldToCanvas(activeStroke.points[activeStroke.points.length - 1], activeView);
+      activeStroke.points.push(canvasToWorld(cPt, activeView));
+      const { pxX } = getPixelScales();
+      const pixelLineW = Math.max(1.25 * currentDpr, activeStroke.width * activeView.scale * pxX);
       ctx.beginPath();
-      ctx.moveTo(last.x, last.y);
-      ctx.lineTo(p.x, p.y);
-      ctx.lineWidth = lineWidth;
-      ctx.strokeStyle = sketchColor;
+      ctx.moveTo(prevC.x, prevC.y);
+      ctx.lineTo(cPt.x, cPt.y);
+      ctx.lineWidth = pixelLineW;
+      ctx.strokeStyle = activeStroke.color;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
-      last = p;
     });
 
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => {
       canvas.addEventListener(ev, () => {
         drawing = false;
+        activeStroke = null;
       });
     });
 
@@ -571,69 +603,54 @@ export function initOrderForm({ reducedMotion = false } = {}) {
         undoStack.length = 0;
       },
       pushUndo,
+      getDoc() {
+        return cloneDoc(doc);
+      },
       undo() {
         const snap = undoStack.pop();
         if (!snap) return;
-        ctx.putImageData(snap.image, 0, 0);
-        hasSketch = snap.hadSketch;
-        snapshotDirty = true;
-        onUndo?.(snap.hadSketch);
+        doc = cloneDoc(snap.doc);
+        hasSketch = doc.strokes.length > 0;
+        redraw();
+        onUndo?.(hasSketch);
       },
       clear() {
         pushUndo();
-        fillBg();
+        doc = { baseW: logicalW, baseH: logicalH, strokes: [] };
         hasSketch = false;
-        masterCanvas = null;
-        snapshotDirty = false;
+        activeStroke = null;
+        redraw();
         onClear?.();
       },
-      copyFrom(sourceCanvas, sourceScale = 1, targetScale = currentDpr) {
-        masterCanvas = null;
-        snapshotDirty = true;
-        drawInkPreserved(ctx, canvas.width, canvas.height, sourceCanvas, {
-          sourceScale,
-          targetScale,
-        });
-      },
-      getDpr() {
-        return currentDpr;
+      copyFrom(sourceSurface) {
+        const sourceDoc = sourceSurface?.getDoc?.();
+        if (!sourceDoc) return;
+        doc = cloneDoc(sourceDoc);
+        hasSketch = doc.strokes.length > 0;
+        redraw();
       },
       resizeTo(cssWidth, cssHeight, dpr = 1, preserveContent = true) {
-        const targetW = Math.max(1, Math.round(cssWidth * dpr));
-        const targetH = Math.max(1, Math.round(cssHeight * dpr));
-        if (targetW === canvas.width && targetH === canvas.height && currentDpr === dpr) return false;
-
-        if (preserveContent && hasSketch) {
-          if (snapshotDirty || !masterCanvas) {
-            masterCanvas = document.createElement('canvas');
-            masterCanvas.width = canvas.width;
-            masterCanvas.height = canvas.height;
-            masterCanvas.getContext('2d')?.drawImage(canvas, 0, 0);
-            masterDpr = currentDpr;
-            snapshotDirty = false;
-          }
-        } else {
-          masterCanvas = null;
-          snapshotDirty = false;
+        const nextLogicalW = Math.max(1, cssWidth);
+        const nextLogicalH = Math.max(1, cssHeight);
+        const targetW = Math.max(1, Math.round(nextLogicalW * dpr));
+        const targetH = Math.max(1, Math.round(nextLogicalH * dpr));
+        if (preserveContent && targetW === canvas.width && targetH === canvas.height && currentDpr === dpr) {
+          return false;
         }
 
         canvas.width = targetW;
         canvas.height = targetH;
         currentDpr = dpr;
-        undoStack.length = 0;
-        if (preserveContent && hasSketch && masterCanvas) {
-          const sameOrientation =
-            (masterCanvas.width >= masterCanvas.height) === (canvas.width >= canvas.height);
-          if (sameOrientation) {
-            drawCanvasFitted(ctx, canvas.width, canvas.height, masterCanvas);
-          } else {
-            drawInkPreserved(ctx, canvas.width, canvas.height, masterCanvas, {
-              sourceScale: masterDpr,
-              targetScale: dpr,
-            });
-          }
-        } else {
+        logicalW = nextLogicalW;
+        logicalH = nextLogicalH;
+
+        if (!preserveContent || !hasSketch || doc.strokes.length === 0) {
+          doc = { baseW: logicalW, baseH: logicalH, strokes: [] };
+          undoStack.length = 0;
           fillBg();
+          activeView = computeViewTransform();
+        } else {
+          redraw();
         }
         return true;
       },
@@ -730,14 +747,11 @@ export function initOrderForm({ reducedMotion = false } = {}) {
     fullSurface.resizeTo(cw, ch, dpr, preserve);
   }
 
-  const getInlineScale = () =>
-    napkinCanvas && napkinCanvas.clientWidth > 0 ? napkinCanvas.width / napkinCanvas.clientWidth : 1;
-
   function closeSketchModal() {
     if (!sketchModal || sketchModal.classList.contains('hidden')) return;
     if (inlineSurface && fullSurface) {
       inlineSurface.pushUndo();
-      inlineSurface.copyFrom(fullSurface.canvas, fullSurface.getDpr(), getInlineScale());
+      inlineSurface.copyFrom(fullSurface);
     }
     sketchModal.classList.add('hidden');
     document.body.style.overflow = '';
@@ -753,7 +767,7 @@ export function initOrderForm({ reducedMotion = false } = {}) {
       if (shouldCopyInline) {
         fullSurface.resetHistory();
         if (hasSketch) {
-          fullSurface.copyFrom(inlineSurface.canvas, getInlineScale(), fullSurface.getDpr());
+          fullSurface.copyFrom(inlineSurface);
         } else {
           fullSurface.fillBg();
         }
